@@ -1,14 +1,13 @@
 using System.Net;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyMusicChatBot.API.Application.Query.GetModelIA;
 using SpotifyMusicChatBot.API.Application.ViewModel.Common;
 
 namespace SpotifyMusicChatBot.API.Application.Controller
-{    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/User")]
+{
+    [ApiController]
+    [Route("api/[controller]")]
     [Produces("application/json")]
     public class ModelIAController : ControllerBase
     {
@@ -36,8 +35,7 @@ namespace SpotifyMusicChatBot.API.Application.Controller
         [ProducesResponseType(typeof(GetModelIAResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.InternalServerError)]
-        public async Task<IActionResult> GetIUser([FromRoute] long id)
+        [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.InternalServerError)]        public async Task<IActionResult> GetIUser([FromRoute] long id)
         {
             GetModelIARequest request = new() { UserId = id.ToString() };
             // Puedes obtener el UID del usuario autenticado así:
@@ -46,15 +44,8 @@ namespace SpotifyMusicChatBot.API.Application.Controller
             // Se envía la solicitud al handler a través de MediatR
             var response = await _mediator.Send(request);
 
-            // Se devuelve la respuesta con el código de estado indicado en la propiedad StatusCode
-            return response.StatusCode switch
-            {
-                (int)HttpStatusCode.OK => Ok(response),
-                (int)HttpStatusCode.BadRequest => BadRequest(response),
-                (int)HttpStatusCode.Unauthorized => Unauthorized(response),
-                (int)HttpStatusCode.InternalServerError => StatusCode((int)HttpStatusCode.InternalServerError, response),
-                _ => StatusCode(response.StatusCode, response)
-            };
+            // Se devuelve la respuesta automáticamente basada en el StatusCode
+            return response.ToActionResult();
         }
     }
 }

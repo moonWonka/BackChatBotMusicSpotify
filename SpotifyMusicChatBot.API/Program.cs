@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,26 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// 2. Versionado de API
-builder.Services.AddApiVersioning(options =>
-{
-    options.DefaultApiVersion = new ApiVersion(1, 0);
-    options.AssumeDefaultVersionWhenUnspecified = true;
-    options.ReportApiVersions = true;
-    options.ApiVersionReader = ApiVersionReader.Combine(
-        new QueryStringApiVersionReader("version"),
-        new HeaderApiVersionReader("X-Version"),
-        new UrlSegmentApiVersionReader()
-    );
-});
-
-builder.Services.AddVersionedApiExplorer(options =>
-{
-    options.GroupNameFormat = "'v'VVV"; // genera v1, v2, etc.
-    options.SubstituteApiVersionInUrl = true;
-});
-
-// 3. Swagger configuración básica
+// 2. Swagger configuración básica
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -39,10 +17,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// 4. MediatR
+// 3. MediatR
 builder.Services.AddMediatR(typeof(Program));
 
-// 5. Inyecciones separadas
+// 4. Inyecciones separadas
 ConfigureServiceDependencies(builder.Services);
 ConfigureRepositoryDependencies(builder.Services);
 
