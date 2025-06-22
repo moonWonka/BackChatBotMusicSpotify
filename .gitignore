@@ -79,6 +79,9 @@ nunit-*.xml
 
 # VS Code
 .vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+.vscode/settings.json
 
 # Sensitive data
 appsettings.*.json

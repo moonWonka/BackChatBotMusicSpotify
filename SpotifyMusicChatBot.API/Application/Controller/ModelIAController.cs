@@ -35,11 +35,10 @@ namespace SpotifyMusicChatBot.API.Application.Controller
         [ProducesResponseType(typeof(GetModelIAResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.InternalServerError)]        public async Task<IActionResult> GetIUser([FromRoute] long id)
+        [ProducesResponseType(typeof(BaseResponse), (int)HttpStatusCode.InternalServerError)]
+        public async Task<IActionResult> GetIUser([FromRoute] long id)
         {
             GetModelIARequest request = new() { UserId = id.ToString() };
-            // Puedes obtener el UID del usuario autenticado así:
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             // Se envía la solicitud al handler a través de MediatR
             var response = await _mediator.Send(request);
