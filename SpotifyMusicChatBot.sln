@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyMusicChatBot.Domain"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyMusicChatBot.Infra", "SpotifyMusicChatBot.Infra\SpotifyMusicChatBot.Infra.csproj", "{68779A1F-200C-4C31-8623-BC919E269141}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyMusicChatBot.Tests.Unit", "SpotifyMusicChatBot.Tests.Unit\SpotifyMusicChatBot.Tests.Unit.csproj", "{DE241ECC-CBA9-47C0-9CDE-198D9CB32E6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyMusicChatBot.Tests.Integration", "SpotifyMusicChatBot.Tests.Integration\SpotifyMusicChatBot.Tests.Integration.csproj", "{1BD31A4E-A425-4BBF-89BA-502EF7BC3A2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{68779A1F-200C-4C31-8623-BC919E269141}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68779A1F-200C-4C31-8623-BC919E269141}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68779A1F-200C-4C31-8623-BC919E269141}.Release|Any CPU.Build.0 = Release|Any CPU
+                {DE241ECC-CBA9-47C0-9CDE-198D9CB32E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {DE241ECC-CBA9-47C0-9CDE-198D9CB32E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {DE241ECC-CBA9-47C0-9CDE-198D9CB32E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {DE241ECC-CBA9-47C0-9CDE-198D9CB32E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+                {1BD31A4E-A425-4BBF-89BA-502EF7BC3A2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {1BD31A4E-A425-4BBF-89BA-502EF7BC3A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {1BD31A4E-A425-4BBF-89BA-502EF7BC3A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {1BD31A4E-A425-4BBF-89BA-502EF7BC3A2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
