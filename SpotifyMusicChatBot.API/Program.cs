@@ -9,7 +9,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// 2. Swagger
+// 2. Azure Application Insights
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    var connectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    if (!string.IsNullOrEmpty(connectionString))
+    {
+        options.ConnectionString = connectionString;
+        Console.WriteLine("📊 Application Insights configurado correctamente");
+    }
+    else
+    {
+        Console.WriteLine("⚠️ Application Insights no configurado (variable APPLICATIONINSIGHTS_CONNECTION_STRING no encontrada)");
+    }
+});
+
+// 3. Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -19,10 +34,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// 3. MediatR - Registra todos los handlers del assembly actual
+// 4. MediatR - Registra todos los handlers del assembly actual
 builder.Services.AddMediatR(typeof(Program).Assembly);
 
-// 4. Inyecciones
+// 5. Inyecciones
 ConfigureServiceDependencies(builder.Services);
 ConfigureRepositoryDependencies(builder.Services);
 

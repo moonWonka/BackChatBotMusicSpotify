@@ -7,15 +7,15 @@ namespace SpotifyMusicChatBot.API.Configuration
     /// Usa el patrón de variable única que contiene la cadena de conexión completa
     /// </summary>
     public static class EnvironmentConfiguration
-    {
-        // Variables de entorno requeridas y opcionales
+    {        // Variables de entorno requeridas y opcionales
         private static readonly Dictionary<string, (bool isRequired, bool isSecret, string description)> EnvironmentVariables = new()
         {
             { "CHATDB", (true, true, "Cadena de conexión completa para la base de datos principal del chat") },
             { "SpotifyDB", (false, true, "Cadena de conexión completa para datos de Spotify (opcional)") },
             { "OPENAI_API_KEY", (false, true, "Clave API de OpenAI para funcionalidades de IA") },
             { "GEMINI_API_KEY", (false, true, "Clave API de Google Gemini") },
-            { "ANTHROPIC_API_KEY", (false, true, "Clave API de Anthropic Claude") }
+            { "ANTHROPIC_API_KEY", (false, true, "Clave API de Anthropic Claude") },
+            { "APPLICATIONINSIGHTS_CONNECTION_STRING", (false, true, "Connection String de Azure Application Insights para telemetría") }
         };
 
         /// <summary>
