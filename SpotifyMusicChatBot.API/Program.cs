@@ -33,14 +33,21 @@ try
     // Validar variables de entorno requeridas
     EnvironmentConfiguration.ValidateEnvironmentVariables(app.Logger);
 
-    // Probar conexión a base de datos
-    var dbConnected = await EnvironmentConfiguration.TestDatabaseConnectionAsync(app.Logger);
-    if (!dbConnected)
+    // Probar conexiones a bases de datos
+    var chatDbConnected = await EnvironmentConfiguration.TestChatDbConnectionAsync(app.Logger);
+    var spotifyDbConnected = await EnvironmentConfiguration.TestSpotifyDbConnectionAsync(app.Logger);
+    
+    if (!chatDbConnected)
     {
-        app.Logger.LogWarning("⚠️ BD no disponible. Algunas funcionalidades pueden fallar.");
+        app.Logger.LogWarning("⚠️ CHATDB no disponible. Funcionalidades del chat pueden fallar.");
+    }
+    
+    if (!spotifyDbConnected)
+    {
+        app.Logger.LogInformation("ℹ️ SpotifyDB no disponible o no configurada.");
     }
 
-    app.Logger.LogInformation("🚀 Aplicación configurada y lista.");
+    app.Logger.LogInformation("🚀 Aplicación configurada y lista para usar.");
 }
 catch (Exception ex)
 {
@@ -69,15 +76,27 @@ app.Run();
 // ----------- Métodos privados para DI -----------
 static void ConfigureServiceDependencies(IServiceCollection services)
 {
-    // Registrar connection string usando configuración estática
-    services.AddScoped<string>(_ => EnvironmentConfiguration.GetDatabaseConnectionString());
-
+    // Ya no necesitamos registrar connection string como servicio
+    // Los repositorios obtienen sus connection strings directamente desde variables de entorno
+    
     // services.AddScoped<ISpotifyService, SpotifyService>();
     // services.AddScoped<IOpenAIService, OpenAIService>();
 }
 
 static void ConfigureRepositoryDependencies(IServiceCollection services)
 {
-    // services.AddScoped<IUserRepository, UserRepository>();
+    // Ejemplos de cómo registrar repositorios que usan el nuevo patrón de variable única:
+    
+    // Los repositorios se crean automáticamente desde variables de entorno
+    // services.AddScoped<ChatBotRepository>(); // Usará automáticamente "CHATDB"
+    // services.AddScoped<SpotifyRepository>();  // Usará automáticamente "SpotifyDB"
+    
+    // Para repositorio con connection string directo (casos especiales):
+    // services.AddScoped<AnalyticsRepository>(provider =>
+    //     new AnalyticsRepository("connection_string_directa_aqui")
+    // );
+    
+    // Futuras implementaciones con interfaces:
     // services.AddScoped<IChatBotRepository, ChatBotRepository>();
+    // services.AddScoped<ISpotifyDataRepository, SpotifyRepository>();
 }

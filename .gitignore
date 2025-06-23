@@ -88,7 +88,10 @@ appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
 *.env
+!.env.example
 
 # Windows
 Thumbs.db
 Desktop.ini
+
+.fake

@@ -1,4 +1,3 @@
-using System.Data;
 using Microsoft.Data.SqlClient;
 using Dapper;
 using SpotifyMusicChatBot.Domain.Application;
@@ -9,10 +8,27 @@ namespace SpotifyMusicChatBot.Infra.Application
     {
         protected readonly string _connectionString;
 
+        /// <summary>
+        /// Constructor que recibe connection string directamente
+        /// </summary>
         protected AbstractRepository(string connectionString)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
-        }        protected SqlConnection CreateConnection()
+        }
+
+        /// <summary>
+        /// Constructor que obtiene connection string desde una variable de entorno específica
+        /// </summary>
+        /// <param name="environmentVariableName">Nombre de la variable de entorno que contiene la cadena de conexión completa (ej: "CHATDB")</param>
+        protected AbstractRepository(string environmentVariableName, bool fromEnvironment)
+        {
+            if (!fromEnvironment)
+                throw new ArgumentException("Este constructor requiere fromEnvironment = true");
+                
+            _connectionString = Environment.GetEnvironmentVariable(environmentVariableName)
+                ?? throw new InvalidOperationException($"Variable de entorno '{environmentVariableName}' no encontrada");
+        }
+        protected SqlConnection CreateConnection()
         {
             return new SqlConnection(_connectionString);
         }

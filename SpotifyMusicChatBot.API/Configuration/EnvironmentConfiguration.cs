@@ -4,20 +4,18 @@ namespace SpotifyMusicChatBot.API.Configuration
 {
     /// <summary>
     /// Configuración estática para validar y gestionar variables de entorno al arranque
-    /// Se ejecuta durante el build/startup de la aplicación, no es un servicio de negocio
+    /// Usa el patrón de variable única que contiene la cadena de conexión completa
     /// </summary>
     public static class EnvironmentConfiguration
     {
-        // Variables requeridas con su clasificación de seguridad
-        private static readonly Dictionary<string, bool> RequiredVariables = new()
+        // Variables de entorno requeridas y opcionales
+        private static readonly Dictionary<string, (bool isRequired, bool isSecret, string description)> EnvironmentVariables = new()
         {
-            { "DB_HOST", false },          // Público
-            { "DB_NAME", false },          // Público  
-            { "DB_USER", true },           // Secreto
-            { "DB_PASSWORD", true },       // Secreto
-            { "OPENAI_API_KEY", true },    // Secreto
-            { "GEMINI_API_KEY", true },    // Secreto
-            { "ANTHROPIC_API_KEY", true }  // Secreto
+            { "CHATDB", (true, true, "Cadena de conexión completa para la base de datos principal del chat") },
+            { "SpotifyDB", (false, true, "Cadena de conexión completa para datos de Spotify (opcional)") },
+            { "OPENAI_API_KEY", (false, true, "Clave API de OpenAI para funcionalidades de IA") },
+            { "GEMINI_API_KEY", (false, true, "Clave API de Google Gemini") },
+            { "ANTHROPIC_API_KEY", (false, true, "Clave API de Anthropic Claude") }
         };
 
         /// <summary>
@@ -26,94 +24,136 @@ namespace SpotifyMusicChatBot.API.Configuration
         /// </summary>
         public static void ValidateEnvironmentVariables(ILogger logger)
         {
-            logger.LogInformation("🔍 Validando configuración de entorno al arranque...");
+            logger.LogInformation("🔍 Validando configuración de entorno...");
             
-            var missingVars = new List<string>();
+            var missingRequired = new List<string>();
             var secretCount = 0;
             var publicCount = 0;
 
-            foreach (var (varName, isSecret) in RequiredVariables)
+            foreach (var (varName, (isRequired, isSecret, description)) in EnvironmentVariables)
             {
                 var value = Environment.GetEnvironmentVariable(varName);
                 
                 if (string.IsNullOrEmpty(value))
                 {
-                    missingVars.Add(varName);
+                    if (isRequired)
+                    {
+                        missingRequired.Add(varName);
+                        logger.LogError("❌ REQUERIDA: {VarName} - {Description}", varName, description);
+                    }
+                    else
+                    {
+                        logger.LogWarning("⚠️ OPCIONAL: {VarName} - {Description}", varName, description);
+                    }
                 }
                 else
                 {
                     if (isSecret)
                     {
                         secretCount++;
-                        logger.LogInformation("✅ [SECRET] {VarName}: ****", varName);
+                        logger.LogInformation("✅ [SECRET] {VarName}: **** - {Description}", varName, description);
                     }
                     else
                     {
                         publicCount++;
-                        logger.LogInformation("✅ [PUBLIC] {VarName}: {Value}", varName, value);
+                        logger.LogInformation("✅ [PUBLIC] {VarName}: {Value} - {Description}", varName, value, description);
                     }
                 }
             }
 
-            // Resumen de carga
-            logger.LogInformation("📊 Configuración de entorno:");
-            logger.LogInformation("   🔒 Variables secretas: {SecretCount}", secretCount);
-            logger.LogInformation("   🌐 Variables públicas: {PublicCount}", publicCount);
+            // Resumen de configuración
+            logger.LogInformation("📊 Resumen de configuración:");
+            logger.LogInformation("   🔒 Variables secretas configuradas: {SecretCount}", secretCount);
+            logger.LogInformation("   🌐 Variables públicas configuradas: {PublicCount}", publicCount);
 
-            if (missingVars.Any())
+            if (missingRequired.Any())
             {
-                var missing = string.Join(", ", missingVars);
-                logger.LogCritical("❌ Variables de entorno faltantes: {MissingVars}", missing);
-                throw new InvalidOperationException($"Configuración incompleta. Variables faltantes: {missing}");
+                var missing = string.Join(", ", missingRequired);
+                logger.LogCritical("❌ FALLO EN CONFIGURACIÓN: Variables requeridas faltantes: {MissingVars}", missing);
+                throw new InvalidOperationException($"Configuración incompleta. Variables requeridas faltantes: {missing}");
             }
 
             logger.LogInformation("✅ Configuración de entorno válida");
         }
 
         /// <summary>
-        /// Construye la cadena de conexión a la base de datos
+        /// Obtiene una cadena de conexión desde una variable de entorno específica
         /// </summary>
-        public static string GetDatabaseConnectionString()
+        public static string GetConnectionString(string environmentVariableName)
         {
-            var host = Environment.GetEnvironmentVariable("DB_HOST") 
-                ?? throw new InvalidOperationException("DB_HOST no configurado");
-            var database = Environment.GetEnvironmentVariable("DB_NAME") 
-                ?? throw new InvalidOperationException("DB_NAME no configurado");
-            var user = Environment.GetEnvironmentVariable("DB_USER") 
-                ?? throw new InvalidOperationException("DB_USER no configurado");
-            var password = Environment.GetEnvironmentVariable("DB_PASSWORD") 
-                ?? throw new InvalidOperationException("DB_PASSWORD no configurado");
+            return Environment.GetEnvironmentVariable(environmentVariableName)
+                ?? throw new InvalidOperationException($"Variable de entorno '{environmentVariableName}' no encontrada");
+        }
 
-            return $"Server={host};Database={database};User Id={user};Password={password};TrustServerCertificate=true;";
+        /// <summary>
+        /// Obtiene la cadena de conexión principal del chat
+        /// </summary>
+        public static string GetChatDbConnectionString()
+        {
+            return GetConnectionString("CHATDB");
+        }
+
+        /// <summary>
+        /// Obtiene la cadena de conexión de Spotify (opcional)
+        /// </summary>
+        public static string? GetSpotifyDbConnectionString()
+        {
+            return Environment.GetEnvironmentVariable("SpotifyDB");
         }
 
         /// <summary>
         /// Obtiene una API Key específica
         /// </summary>
-        public static string GetApiKey(string service)
+        public static string? GetApiKey(string service)
         {
             var envVarName = $"{service.ToUpper()}_API_KEY";
-            return Environment.GetEnvironmentVariable(envVarName) 
-                ?? throw new InvalidOperationException($"{envVarName} no configurado");
+            return Environment.GetEnvironmentVariable(envVarName);
         }
 
         /// <summary>
-        /// Verifica la conectividad a la base de datos al arranque
+        /// Verifica la conectividad a la base de datos principal al arranque
         /// </summary>
-        public static async Task<bool> TestDatabaseConnectionAsync(ILogger logger)
+        public static async Task<bool> TestChatDbConnectionAsync(ILogger logger)
         {
             try
             {
-                var connectionString = GetDatabaseConnectionString();
+                var connectionString = GetChatDbConnectionString();
                 using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
                 await connection.OpenAsync();
                 
-                logger.LogInformation("✅ Conexión a base de datos verificada");
+                logger.LogInformation("✅ Conexión a CHATDB verificada exitosamente");
                 return true;
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "⚠️ Conexión a base de datos falló: {Error}", ex.Message);
+                logger.LogError(ex, "❌ Error al conectar con CHATDB: {Error}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Verifica la conectividad a la base de datos de Spotify (si está configurada)
+        /// </summary>
+        public static async Task<bool> TestSpotifyDbConnectionAsync(ILogger logger)
+        {
+            try
+            {
+                var connectionString = GetSpotifyDbConnectionString();
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    logger.LogInformation("ℹ️ SpotifyDB no configurada, omitiendo test de conexión");
+                    return true; // No es error si no está configurada
+                }
+
+                using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+                await connection.OpenAsync();
+                
+                logger.LogInformation("✅ Conexión a SpotifyDB verificada exitosamente");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "⚠️ Error al conectar con SpotifyDB: {Error}", ex.Message);
                 return false;
             }
         }
