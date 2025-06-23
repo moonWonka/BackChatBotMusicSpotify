@@ -9,6 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// 1.1 Configurar logging para producción
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+if (builder.Environment.IsProduction())
+{
+    builder.Logging.SetMinimumLevel(LogLevel.Information);
+}
+
 // 2. Azure Application Insights
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
@@ -74,14 +83,16 @@ catch (Exception ex)
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
+// Swagger disponible en todos los entornos para debugging
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+    if (app.Environment.IsProduction())
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-    });
-}
+        options.RoutePrefix = "swagger"; // Accesible en /swagger
+    }
+});
 
 app.MapControllers();
 app.Run();
