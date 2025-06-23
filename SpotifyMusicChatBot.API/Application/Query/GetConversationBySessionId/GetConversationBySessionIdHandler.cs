@@ -13,18 +13,15 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetConversationBySessionId
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<GetConversationBySessionIdResponse> Handle(GetConversationBySessionIdRequest request, CancellationToken cancellationToken)
+        }        public async Task<GetConversationBySessionIdResponse> Handle(GetConversationBySessionIdRequest request, CancellationToken cancellationToken)
         {
             try
             {
                 IEnumerable<ConversationTurn> conversation = await _chatRepository.GetConversationBySessionIdAsync(request.SessionId);
-                
-                return new GetConversationBySessionIdResponse
+                  return new GetConversationBySessionIdResponse
                 {
                     Conversation = conversation,
-                    Success = true,
+                    StatusCode = 200,
                     Message = "Conversación obtenida exitosamente"
                 };
             }
@@ -33,7 +30,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetConversationBySessionId
                 _logger.LogError(ex, "Error retrieving conversation by session ID: {SessionId}, Message: {Message}", request.SessionId, ex.Message);
                 return new GetConversationBySessionIdResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error interno del servidor"
                 };
             }

@@ -2,30 +2,44 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace SpotifyMusicChatBot.API.Application.ViewModel.Common
-{    public class BaseResponse
+{
+    public class BaseResponse
     {
-        public bool Success { get; set; } = true;
         public int StatusCode { get; set; } = 200;
         public string Message { get; set; } = "-";
-        public string Error { get; set; } = "-";
-
-        // Constructor por defecto (Success = true, StatusCode = 200, Message = "-", Error = "-")
-        public BaseResponse() { }
-
-        // Constructor para casos exitosos con mensaje
+        public string Error { get; set; } = "-";        // Constructor por defecto (StatusCode = 200)
+        public BaseResponse() { }        // Constructor para casos exitosos con mensaje
         public BaseResponse(string message)
         {
-            Success = true;
+            StatusCode = 200;
             Message = message;
-        }
-
-        // Constructor para casos de error
+        }        // Constructor para casos de error con status code específico
         public BaseResponse(int statusCode, string message = "-", string error = "-")
         {
-            Success = false;
             StatusCode = statusCode;
             Message = message;
             Error = error;
+        }
+
+        // Métodos helper para respuestas comunes
+        public static BaseResponse Ok(string message = "Operación exitosa")
+        {
+            return new BaseResponse(message);
+        }
+
+        public static BaseResponse BadRequest(string message = "Solicitud inválida")
+        {
+            return new BaseResponse(400, message);
+        }
+
+        public static BaseResponse NotFound(string message = "Recurso no encontrado")
+        {
+            return new BaseResponse(404, message);
+        }
+
+        public static BaseResponse InternalServerError(string message = "Error interno del servidor")
+        {
+            return new BaseResponse(500, message);
         }
 
         /// <summary>

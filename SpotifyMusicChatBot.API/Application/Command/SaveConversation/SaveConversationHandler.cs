@@ -12,21 +12,18 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<SaveConversationResponse> Handle(SaveConversationRequest request, CancellationToken cancellationToken)
+        }        public async Task<SaveConversationResponse> Handle(SaveConversationRequest request, CancellationToken cancellationToken)
         {
             try
             {
                 string sessionId = request.SessionId ?? _chatRepository.GenerateSessionId();
                 bool success = await _chatRepository.SaveConversationAsync(request.UserPrompt, request.AiResponse, sessionId);
-                
-                if (success)
+                  if (success)
                 {
                     return new SaveConversationResponse
                     {
                         SessionId = sessionId,
-                        Success = true,
+                        StatusCode = 200,
                         Message = "Conversación guardada exitosamente"
                     };
                 }
@@ -34,7 +31,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
                 {
                     return new SaveConversationResponse
                     {
-                        Success = false,
+                        StatusCode = 400,
                         Message = "Error al guardar la conversación"
                     };
                 }
@@ -44,7 +41,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
                 _logger.LogError(ex, "Error saving conversation: {Message}", ex.Message);
                 return new SaveConversationResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error interno del servidor"
                 };
             }

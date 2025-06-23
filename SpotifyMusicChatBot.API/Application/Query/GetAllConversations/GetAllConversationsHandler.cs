@@ -12,18 +12,15 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<GetAllConversationsResponse> Handle(GetAllConversationsRequest request, CancellationToken cancellationToken)
+        }        public async Task<GetAllConversationsResponse> Handle(GetAllConversationsRequest request, CancellationToken cancellationToken)
         {
             try
             {
                 IEnumerable<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsAsync();
-                
-                return new GetAllConversationsResponse
+                  return new GetAllConversationsResponse
                 {
                     Conversations = conversations,
-                    Success = true,
+                    StatusCode = 200,
                     Message = "Conversaciones obtenidas exitosamente"
                 };
             }
@@ -32,7 +29,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
                 _logger.LogError(ex, "Error retrieving conversations");
                 return new GetAllConversationsResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error al obtener las conversaciones"
                 };
             }

@@ -13,17 +13,14 @@ namespace SpotifyMusicChatBot.API.Application.Query.SearchConversations
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<SearchConversationsResponse> Handle(SearchConversationsRequest request, CancellationToken cancellationToken)
+        }        public async Task<SearchConversationsResponse> Handle(SearchConversationsRequest request, CancellationToken cancellationToken)
         {
             try
-            {
-                if (string.IsNullOrWhiteSpace(request.SearchTerm))
+            {                if (string.IsNullOrWhiteSpace(request.SearchTerm))
                 {
                     return new SearchConversationsResponse
                     {
-                        Success = false,
+                        StatusCode = 400,
                         Message = "El término de búsqueda es requerido"
                     };
                 }
@@ -33,7 +30,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.SearchConversations
                 return new SearchConversationsResponse
                 {
                     Results = results,
-                    Success = true,
+                    StatusCode = 200,
                     Message = "Búsqueda realizada exitosamente"
                 };
             }
@@ -42,7 +39,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.SearchConversations
                 _logger.LogError(ex, "Error searching conversations with term: {SearchTerm}, Message: {Message}", request.SearchTerm, ex.Message);
                 return new SearchConversationsResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error interno del servidor"
                 };
             }

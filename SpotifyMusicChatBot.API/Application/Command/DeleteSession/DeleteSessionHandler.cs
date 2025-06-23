@@ -12,19 +12,16 @@ namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<DeleteSessionResponse> Handle(DeleteSessionRequest request, CancellationToken cancellationToken)
+        }        public async Task<DeleteSessionResponse> Handle(DeleteSessionRequest request, CancellationToken cancellationToken)
         {
             try
             {
                 bool deleted = await _chatRepository.DeleteSessionAsync(request.SessionId);
-                
-                if (deleted)
+                  if (deleted)
                 {
                     return new DeleteSessionResponse
                     {
-                        Success = true,
+                        StatusCode = 200,
                         Message = "Sesión eliminada exitosamente"
                     };
                 }
@@ -32,7 +29,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
                 {
                     return new DeleteSessionResponse
                     {
-                        Success = false,
+                        StatusCode = 404,
                         Message = "Sesión no encontrada"
                     };
                 }
@@ -42,7 +39,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
                 _logger.LogError(ex, "Error deleting session ID: {SessionId}, Message: {Message}", request.SessionId, ex.Message);
                 return new DeleteSessionResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error interno del servidor"
                 };
             }

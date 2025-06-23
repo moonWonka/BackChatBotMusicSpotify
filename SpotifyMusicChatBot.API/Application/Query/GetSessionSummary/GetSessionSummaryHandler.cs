@@ -13,20 +13,17 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }
-
-        public async Task<GetSessionSummaryResponse> Handle(GetSessionSummaryRequest request, CancellationToken cancellationToken)
+        }        public async Task<GetSessionSummaryResponse> Handle(GetSessionSummaryRequest request, CancellationToken cancellationToken)
         {
             try
             {
                 SessionSummary? summary = await _chatRepository.GetSessionSummaryAsync(request.SessionId);
-                
-                if (summary != null)
+                  if (summary != null)
                 {
                     return new GetSessionSummaryResponse
                     {
                         Summary = summary,
-                        Success = true,
+                        StatusCode = 200,
                         Message = "Resumen de sesión obtenido exitosamente"
                     };
                 }
@@ -34,7 +31,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
                 {
                     return new GetSessionSummaryResponse
                     {
-                        Success = false,
+                        StatusCode = 404,
                         Message = "Sesión no encontrada"
                     };
                 }
@@ -44,7 +41,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
                 _logger.LogError(ex, "Error retrieving session summary for session ID: {SessionId}, Message: {Message}", request.SessionId, ex.Message);
                 return new GetSessionSummaryResponse
                 {
-                    Success = false,
+                    StatusCode = 500,
                     Message = "Error interno del servidor"
                 };
             }
