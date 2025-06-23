@@ -24,10 +24,10 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build SpotifyMusicChatBot.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish SpotifyMusicChatBot.API/SpotifyMusicChatBot.API.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -65,4 +65,40 @@ jobs:
           app-name: 'BffChatBotSpotify'
           slot-name: 'Production'
           package: .
+          
+      - name: 📊 Configure Application Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: 'BffChatBotSpotify'
+          app-settings-json: |
+            [
+              {
+                "name": "ASPNETCORE_ENVIRONMENT",
+                "value": "Production"
+              },
+              {
+                "name": "ASPNETCORE_URLS",
+                "value": "http://+:8080"
+              },
+              {
+                "name": "WEBSITES_PORT",
+                "value": "8080"
+              },
+              {
+                "name": "CHATDB",
+                "value": "${{ secrets.AZURE_CHATDB }}"
+              },
+              {
+                "name": "APPLICATIONINSIGHTS_CONNECTION_STRING", 
+                "value": "${{ secrets.AZURE_APPLICATIONINSIGHTS_CONNECTION_STRING }}"
+              }
+            ]
+          general-settings-json: |
+            [
+              {
+                "alwaysOn": true,
+                "use32BitWorkerProcess": false,
+                "netFrameworkVersion": "v8.0"
+              }
+            ]
           
