@@ -19,8 +19,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// 3. MediatR
-builder.Services.AddMediatR(typeof(Program));
+// 3. MediatR - Registra todos los handlers del assembly actual
+builder.Services.AddMediatR(typeof(Program).Assembly);
 
 // 4. Inyecciones
 ConfigureServiceDependencies(builder.Services);
@@ -64,7 +64,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SpotifyMusicChatBot API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
     });
 }
 
