@@ -34,9 +34,8 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
-
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
@@ -67,19 +66,19 @@ jobs:
           package: .
       
       - name: 🔓 Configure SQL Server Firewall
-        uses: azure/CLI@v1
+        uses: azure/CLI@v2
         with:
-          azcliversion: 2.30.0
           inlineScript: |
-            echo "Configurando firewall de SQL Server iapp..."
-              # Permitir servicios de Azure (regla básica)
+            echo "🔥 Configurando firewall de SQL Server iapp..."
+            
+            # Permitir servicios de Azure (regla básica)
             az sql server firewall-rule create \
               --resource-group CHATIA2025 \
               --server iapp \
               --name "AllowAzureServices" \
               --start-ip-address 0.0.0.0 \
               --end-ip-address 0.0.0.0 \
-              --only-show-errors || echo "Regla AllowAzureServices ya existe"
+              --only-show-errors || echo "✅ Regla AllowAzureServices ya existe"
             
             # Permitir rango de IPs del App Service backend (68.211.56.x)
             az sql server firewall-rule create \
@@ -88,7 +87,7 @@ jobs:
               --name "BackendAppServiceRange" \
               --start-ip-address 68.211.56.0 \
               --end-ip-address 68.211.56.255 \
-              --only-show-errors || echo "Regla BackendAppServiceRange ya existe"
+              --only-show-errors || echo "✅ Regla BackendAppServiceRange ya existe"
             
             # Si tienes IP específica adicional del backend, agrégala
             if [ ! -z "${{ secrets.BACKEND_APP_SERVICE_IP }}" ]; then
@@ -98,10 +97,10 @@ jobs:
                 --name "BackendAppServiceSpecific" \
                 --start-ip-address ${{ secrets.BACKEND_APP_SERVICE_IP }} \
                 --end-ip-address ${{ secrets.BACKEND_APP_SERVICE_IP }} \
-                --only-show-errors || echo "Regla BackendAppServiceSpecific ya existe"
+                --only-show-errors || echo "✅ Regla BackendAppServiceSpecific ya existe"
             fi
             
-            echo "✅ Firewall configurado correctamente"
+            echo "🎯 Firewall configurado correctamente"
           
       - name: 📊 Configure Application Settings
         uses: azure/appservice-settings@v1
