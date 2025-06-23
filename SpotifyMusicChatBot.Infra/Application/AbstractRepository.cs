@@ -31,31 +31,27 @@ namespace SpotifyMusicChatBot.Infra.Application
         protected SqlConnection CreateConnection()
         {
             return new SqlConnection(_connectionString);
-        }
-
-        // Métodos base para operaciones CRUD con Dapper - Implementación de IAbstractRepository
+        }        // Métodos base para operaciones CRUD con Dapper - Implementación de IAbstractRepository
         public async Task<T?> GetByIdAsync<T>(string query, object parameters)
         {
-            using var connection = CreateConnection();
+            using SqlConnection connection = CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<T>(query, parameters);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync<T>(string query, object? parameters = null)
         {
-            using var connection = CreateConnection();
+            using SqlConnection connection = CreateConnection();
             return await connection.QueryAsync<T>(query, parameters);
         }
 
         public async Task<int> ExecuteAsync(string query, object parameters)
         {
-            using var connection = CreateConnection();
+            using SqlConnection connection = CreateConnection();
             return await connection.ExecuteAsync(query, parameters);
-        }
-
-        public async Task<T> ExecuteScalarAsync<T>(string query, object parameters)
+        }        public async Task<T> ExecuteScalarAsync<T>(string query, object parameters)
         {
-            using var connection = CreateConnection();
-            var result = await connection.ExecuteScalarAsync<T>(query, parameters);
+            using SqlConnection connection = CreateConnection();
+            T? result = await connection.ExecuteScalarAsync<T>(query, parameters);
             return result!; // Se asume que T es non-nullable en este contexto
         }
 
@@ -64,7 +60,7 @@ namespace SpotifyMusicChatBot.Infra.Application
         {
             try
             {
-                using var connection = CreateConnection();
+                using SqlConnection connection = CreateConnection();
                 await connection.OpenAsync();
                 return true;
             }

@@ -1,5 +1,7 @@
 using MediatR;
 using SpotifyMusicChatBot.API.Configuration;
+using SpotifyMusicChatBot.Domain.Application.Repository;
+using SpotifyMusicChatBot.Infra.Application.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,21 +9,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// 2. Swagger configuración básica
+// 2. Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "SpotifyMusicChatBot API",
         Version = "v1",
-        Description = "API para el ChatBot de Música de Spotify"
     });
 });
 
 // 3. MediatR
 builder.Services.AddMediatR(typeof(Program));
 
-// 4. Inyecciones separadas
+// 4. Inyecciones
 ConfigureServiceDependencies(builder.Services);
 ConfigureRepositoryDependencies(builder.Services);
 
@@ -30,12 +31,10 @@ var app = builder.Build();
 // VALIDACIÓN DE CONFIGURACIÓN AL ARRANQUE
 try
 {
-    // Validar variables de entorno requeridas
     EnvironmentConfiguration.ValidateEnvironmentVariables(app.Logger);
 
-    // Probar conexiones a bases de datos
-    var chatDbConnected = await EnvironmentConfiguration.TestChatDbConnectionAsync(app.Logger);
-    var spotifyDbConnected = await EnvironmentConfiguration.TestSpotifyDbConnectionAsync(app.Logger);
+    bool chatDbConnected = await EnvironmentConfiguration.TestChatDbConnectionAsync(app.Logger);
+    bool spotifyDbConnected = await EnvironmentConfiguration.TestSpotifyDbConnectionAsync(app.Logger);
     
     if (!chatDbConnected)
     {
@@ -56,7 +55,7 @@ catch (Exception ex)
     Environment.Exit(1);
 }
 
-// Middleware y pipeline
+// Middleware
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
@@ -76,27 +75,11 @@ app.Run();
 // ----------- Métodos privados para DI -----------
 static void ConfigureServiceDependencies(IServiceCollection services)
 {
-    // Ya no necesitamos registrar connection string como servicio
-    // Los repositorios obtienen sus connection strings directamente desde variables de entorno
-    
     // services.AddScoped<ISpotifyService, SpotifyService>();
     // services.AddScoped<IOpenAIService, OpenAIService>();
 }
 
 static void ConfigureRepositoryDependencies(IServiceCollection services)
 {
-    // Ejemplos de cómo registrar repositorios que usan el nuevo patrón de variable única:
-    
-    // Los repositorios se crean automáticamente desde variables de entorno
-    // services.AddScoped<ChatBotRepository>(); // Usará automáticamente "CHATDB"
-    // services.AddScoped<SpotifyRepository>();  // Usará automáticamente "SpotifyDB"
-    
-    // Para repositorio con connection string directo (casos especiales):
-    // services.AddScoped<AnalyticsRepository>(provider =>
-    //     new AnalyticsRepository("connection_string_directa_aqui")
-    // );
-    
-    // Futuras implementaciones con interfaces:
-    // services.AddScoped<IChatBotRepository, ChatBotRepository>();
-    // services.AddScoped<ISpotifyDataRepository, SpotifyRepository>();
+    services.AddScoped<IChatBotRepository, ChatIARepository>();
 }
