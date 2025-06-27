@@ -1,10 +1,10 @@
 using SpotifyMusicChatBot.API.Application.ViewModel.Common;
-using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
+using SpotifyMusicChatBot.API.Application.ViewModel.GetSessionSummary;
 
 namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
 {
     public class GetSessionSummaryResponse : BaseResponse
     {
-        public SessionSummary? Summary { get; set; }
+        public SessionSummaryViewModel? Summary { get; set; }
     }
 }

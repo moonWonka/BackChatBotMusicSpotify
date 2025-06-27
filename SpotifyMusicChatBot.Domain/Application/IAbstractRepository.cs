@@ -27,14 +27,6 @@ namespace SpotifyMusicChatBot.Domain.Application
         Task<int> ExecuteAsync(string query, object parameters);
 
         /// <summary>
-        /// Ejecuta una consulta sin transacción (para casos donde no se requiere)
-        /// </summary>
-        /// <param name="query">Consulta SQL</param>
-        /// <param name="parameters">Parámetros para la consulta</param>
-        /// <returns>Número de filas afectadas</returns>
-        Task<int> ExecuteWithoutTransactionAsync(string query, object parameters);
-
-        /// <summary>
         /// Ejecuta múltiples operaciones en una sola transacción
         /// </summary>
         /// <param name="operations">Array de tuplas con consultas y parámetros</param>
@@ -49,15 +41,6 @@ namespace SpotifyMusicChatBot.Domain.Application
         /// <param name="parameters">Parámetros para la consulta</param>
         /// <returns>El valor escalar resultado de la consulta</returns>
         Task<T> ExecuteScalarAsync<T>(string query, object parameters);
-
-        /// <summary>
-        /// Ejecuta una consulta escalar sin transacción (para casos donde no se requiere)
-        /// </summary>
-        /// <typeparam name="T">Tipo del valor a retornar</typeparam>
-        /// <param name="query">Consulta SQL</param>
-        /// <param name="parameters">Parámetros para la consulta</param>
-        /// <returns>El valor escalar resultado de la consulta</returns>
-        Task<T> ExecuteScalarWithoutTransactionAsync<T>(string query, object parameters);
 
         /// <summary>
         /// Verifica si la conexión a la base de datos está disponible

@@ -1,6 +1,7 @@
 using MediatR;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using SpotifyMusicChatBot.Domain.Application;
+using SpotifyMusicChatBot.API.Application.Mappers;
 using Microsoft.Data.SqlClient;
 
 namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
@@ -36,22 +37,13 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
                 {
                     await trans.CommitAsync(cancellationToken);
                     _logger.LogInformation("✅ Conversación guardada exitosamente para sessionId: {SessionId}", sessionId);
-                    return new SaveConversationResponse 
-                    { 
-                        StatusCode = 200,
-                        Message = "Conversación guardada exitosamente",
-                        SessionId = sessionId
-                    };
+                    return SaveConversationMapper.ToSuccessResponse(sessionId);
                 }
                 else
                 {
                     await trans.RollbackAsync(cancellationToken);
                     _logger.LogWarning("⚠️ No se pudo guardar la conversación para sessionId: {SessionId}", sessionId);
-                    return new SaveConversationResponse
-                    {
-                        StatusCode = 400,
-                        Message = "Error al guardar la conversación"
-                    };
+                    return SaveConversationMapper.ToErrorResponse(400, "Error al guardar la conversación");
                 }
             }
             catch (Exception ex)
@@ -67,11 +59,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
                     _logger.LogError(rollbackEx, "❌ Error durante rollback de transacción: {Message}", rollbackEx.Message);
                 }
 
-                return new SaveConversationResponse
-                {
-                    StatusCode = 500,
-                    Message = "Error interno del servidor al guardar la conversación"
-                };
+                return SaveConversationMapper.ToErrorResponse(500, "Error interno del servidor al guardar la conversación");
             }
         }
     }

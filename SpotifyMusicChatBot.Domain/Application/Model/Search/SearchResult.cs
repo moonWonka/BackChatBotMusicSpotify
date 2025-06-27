@@ -5,9 +5,10 @@ namespace SpotifyMusicChatBot.Domain.Application.Model.Search
     /// </summary>
     public class SearchResult
     {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
         public string SessionId { get; set; } = string.Empty;
         public string UserPrompt { get; set; } = string.Empty;
         public string AiResponse { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; }
     }
 }

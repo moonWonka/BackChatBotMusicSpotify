@@ -1,6 +1,7 @@
 using MediatR;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
+using SpotifyMusicChatBot.API.Application.Mappers;
 
 namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
 {
@@ -18,32 +19,20 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetSessionSummary
             try
             {
                 SessionSummary? summary = await _chatRepository.GetSessionSummaryAsync(request.SessionId);
-                  if (summary != null)
+                
+                if (summary != null)
                 {
-                    return new GetSessionSummaryResponse
-                    {
-                        Summary = summary,
-                        StatusCode = 200,
-                        Message = "Resumen de sesión obtenido exitosamente"
-                    };
+                    return GetSessionSummaryMapper.ToSuccessResponse(summary);
                 }
                 else
                 {
-                    return new GetSessionSummaryResponse
-                    {
-                        StatusCode = 404,
-                        Message = "Sesión no encontrada"
-                    };
+                    return GetSessionSummaryMapper.ToNotFoundResponse(request.SessionId);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving session summary for session ID: {SessionId}, Message: {Message}", request.SessionId, ex.Message);
-                return new GetSessionSummaryResponse
-                {
-                    StatusCode = 500,
-                    Message = "Error interno del servidor"
-                };
+                return GetSessionSummaryMapper.ToErrorResponse(500, "Error interno del servidor");
             }
         }
     }

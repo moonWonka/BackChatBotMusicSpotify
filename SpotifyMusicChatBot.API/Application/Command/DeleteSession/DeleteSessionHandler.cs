@@ -1,6 +1,7 @@
 using MediatR;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using SpotifyMusicChatBot.Domain.Application;
+using SpotifyMusicChatBot.API.Application.Mappers;
 using Microsoft.Data.SqlClient;
 
 namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
@@ -31,21 +32,13 @@ namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
                 {
                     await trans.CommitAsync(cancellationToken);
                     _logger.LogInformation("✅ Sesión eliminada exitosamente: {SessionId}", request.SessionId);
-                    return new DeleteSessionResponse
-                    {
-                        StatusCode = 200,
-                        Message = "Sesión eliminada exitosamente"
-                    };
+                    return DeleteSessionMapper.ToSuccessResponse(request.SessionId);
                 }
                 else
                 {
                     await trans.RollbackAsync(cancellationToken);
                     _logger.LogWarning("⚠️ Sesión no encontrada: {SessionId}", request.SessionId);
-                    return new DeleteSessionResponse
-                    {
-                        StatusCode = 404,
-                        Message = "Sesión no encontrada"
-                    };
+                    return DeleteSessionMapper.ToNotFoundResponse(request.SessionId);
                 }
             }
             catch (Exception ex)
@@ -61,11 +54,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.DeleteSession
                     _logger.LogError(rollbackEx, "❌ Error durante rollback de transacción: {Message}", rollbackEx.Message);
                 }
 
-                return new DeleteSessionResponse
-                {
-                    StatusCode = 500,
-                    Message = "Error interno del servidor"
-                };
+                return DeleteSessionMapper.ToErrorResponse(500, "Error interno del servidor");
             }
         }
     }

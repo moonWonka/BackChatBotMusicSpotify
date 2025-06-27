@@ -4,7 +4,8 @@ using Dapper;
 using SpotifyMusicChatBot.Domain.Application;
 
 namespace SpotifyMusicChatBot.Infra.Application
-{    public abstract class AbstractRepository : IAbstractRepository
+{
+    public abstract class AbstractRepository : IAbstractRepository
     {
         protected readonly string _connectionString;
         protected readonly ILogger? _logger;
@@ -42,20 +43,20 @@ namespace SpotifyMusicChatBot.Infra.Application
                 _logger?.LogDebug("🔍 Ejecutando consulta GetByIdAsync: {QueryType}", typeof(T).Name);
                 using SqlConnection connection = CreateConnection();
                 var result = await connection.QueryFirstOrDefaultAsync<T>(query, parameters);
-                
-                _logger?.LogDebug("✅ Consulta GetByIdAsync completada: {QueryType}, Resultado: {HasResult}", 
+
+                _logger?.LogDebug("✅ Consulta GetByIdAsync completada: {QueryType}, Resultado: {HasResult}",
                     typeof(T).Name, result != null ? "Encontrado" : "No encontrado");
                 return result;
             }
             catch (SqlException ex)
             {
-                _logger?.LogError(ex, "❌ Error SQL en GetByIdAsync: {QueryType} | ErrorNumber: {ErrorNumber} | Query: {Query}", 
+                _logger?.LogError(ex, "❌ Error SQL en GetByIdAsync: {QueryType} | ErrorNumber: {ErrorNumber} | Query: {Query}",
                     typeof(T).Name, ex.Number, query);
                 throw new InvalidOperationException($"Error en consulta SQL: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Error inesperado en GetByIdAsync: {QueryType} | Query: {Query}", 
+                _logger?.LogError(ex, "❌ Error inesperado en GetByIdAsync: {QueryType} | Query: {Query}",
                     typeof(T).Name, query);
                 throw new InvalidOperationException($"Error inesperado en consulta: {ex.Message}", ex);
             }
@@ -68,24 +69,25 @@ namespace SpotifyMusicChatBot.Infra.Application
                 _logger?.LogDebug("🔍 Ejecutando consulta GetAllAsync: {QueryType}", typeof(T).Name);
                 using SqlConnection connection = CreateConnection();
                 var result = await connection.QueryAsync<T>(query, parameters);
-                
-                _logger?.LogDebug("✅ Consulta GetAllAsync completada: {QueryType}, Registros: {Count}", 
+
+                _logger?.LogDebug("✅ Consulta GetAllAsync completada: {QueryType}, Registros: {Count}",
                     typeof(T).Name, result.Count());
                 return result;
             }
             catch (SqlException ex)
             {
-                _logger?.LogError(ex, "❌ Error SQL en GetAllAsync: {QueryType} | ErrorNumber: {ErrorNumber} | Query: {Query}", 
+                _logger?.LogError(ex, "❌ Error SQL en GetAllAsync: {QueryType} | ErrorNumber: {ErrorNumber} | Query: {Query}",
                     typeof(T).Name, ex.Number, query);
                 throw new InvalidOperationException($"Error en consulta SQL: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Error inesperado en GetAllAsync: {QueryType} | Query: {Query}", 
+                _logger?.LogError(ex, "❌ Error inesperado en GetAllAsync: {QueryType} | Query: {Query}",
                     typeof(T).Name, query);
                 throw new InvalidOperationException($"Error inesperado en consulta: {ex.Message}", ex);
             }
-        }        public async Task<int> ExecuteAsync(string query, object parameters)
+        }
+        public async Task<int> ExecuteAsync(string query, object parameters)
         {
             try
             {
@@ -93,12 +95,12 @@ namespace SpotifyMusicChatBot.Infra.Application
                 using SqlConnection connection = CreateConnection();
                 await connection.OpenAsync();
                 using SqlTransaction transaction = connection.BeginTransaction();
-                
+
                 try
                 {
                     int result = await connection.ExecuteAsync(query, parameters, transaction);
                     await transaction.CommitAsync();
-                    
+
                     _logger?.LogInformation("✅ Transacción ExecuteAsync completada exitosamente. Filas afectadas: {AffectedRows}", result);
                     return result;
                 }
@@ -111,7 +113,7 @@ namespace SpotifyMusicChatBot.Infra.Application
             }
             catch (SqlException ex)
             {
-                _logger?.LogError(ex, "❌ Error SQL en ExecuteAsync | ErrorNumber: {ErrorNumber} | Severity: {Severity} | Query: {Query}", 
+                _logger?.LogError(ex, "❌ Error SQL en ExecuteAsync | ErrorNumber: {ErrorNumber} | Severity: {Severity} | Query: {Query}",
                     ex.Number, ex.Class, query);
                 throw new InvalidOperationException($"Error en ejecución SQL: {ex.Message}", ex);
             }
@@ -122,25 +124,7 @@ namespace SpotifyMusicChatBot.Infra.Application
             }
         }
 
-        /// <summary>
-        /// Ejecuta una operación sin transacción (para casos donde no se requiere)
-        /// </summary>
-        public async Task<int> ExecuteWithoutTransactionAsync(string query, object parameters)
-        {
-            try
-            {
-                using SqlConnection connection = CreateConnection();
-                return await connection.ExecuteAsync(query, parameters);
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException($"Error en ejecución SQL: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error inesperado en ejecución: {ex.Message}", ex);
-            }
-        }
+
 
         /// <summary>
         /// Ejecuta múltiples operaciones en una sola transacción
@@ -152,7 +136,7 @@ namespace SpotifyMusicChatBot.Infra.Application
                 using SqlConnection connection = CreateConnection();
                 await connection.OpenAsync();
                 using SqlTransaction transaction = connection.BeginTransaction();
-                
+
                 try
                 {
                     int totalAffectedRows = 0;
@@ -160,7 +144,7 @@ namespace SpotifyMusicChatBot.Infra.Application
                     {
                         totalAffectedRows += await connection.ExecuteAsync(query, parameters, transaction);
                     }
-                    
+
                     await transaction.CommitAsync();
                     return totalAffectedRows;
                 }
@@ -178,14 +162,15 @@ namespace SpotifyMusicChatBot.Infra.Application
             {
                 throw new InvalidOperationException($"Error inesperado en ejecución múltiple: {ex.Message}", ex);
             }
-        }        public async Task<T> ExecuteScalarAsync<T>(string query, object parameters)
+        }
+        public async Task<T> ExecuteScalarAsync<T>(string query, object parameters)
         {
             try
             {
                 using SqlConnection connection = CreateConnection();
                 await connection.OpenAsync();
                 using SqlTransaction transaction = connection.BeginTransaction();
-                
+
                 try
                 {
                     T? result = await connection.ExecuteScalarAsync<T>(query, parameters, transaction);
@@ -208,40 +193,21 @@ namespace SpotifyMusicChatBot.Infra.Application
             }
         }
 
-        /// <summary>
-        /// Ejecuta una consulta escalar sin transacción (para casos donde no se requiere)
-        /// </summary>
-        public async Task<T> ExecuteScalarWithoutTransactionAsync<T>(string query, object parameters)
-        {
-            try
-            {
-                using SqlConnection connection = CreateConnection();
-                T? result = await connection.ExecuteScalarAsync<T>(query, parameters);
-                return result!; // Se asume que T es non-nullable en este contexto
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException($"Error en consulta SQL escalar: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException($"Error inesperado en consulta escalar: {ex.Message}", ex);
-            }
-        }        // Método para verificar conexión
+// Método para verificar conexión
         public async Task<bool> TestConnectionAsync()
         {
             try
             {
                 using SqlConnection connection = CreateConnection();
                 await connection.OpenAsync();
-                
+
                 _logger?.LogInformation("✅ Conexión a base de datos exitosa");
                 return true;
             }
             catch (SqlException ex)
             {
                 // Log específico para errores de SQL Server con Application Insights
-                _logger?.LogError(ex, "❌ Error de conexión SQL: {ErrorMessage} | ErrorNumber: {ErrorNumber} | Severity: {Severity}", 
+                _logger?.LogError(ex, "❌ Error de conexión SQL: {ErrorMessage} | ErrorNumber: {ErrorNumber} | Severity: {Severity}",
                     ex.Message, ex.Number, ex.Class);
                 return false;
             }
@@ -253,14 +219,7 @@ namespace SpotifyMusicChatBot.Infra.Application
             }
         }
 
-        /// <summary>
-        /// Obtiene la cadena de conexión configurada
-        /// </summary>
-        /// <returns>La cadena de conexión</returns>
-        public string GetConnectionString()
-        {
-            return _connectionString;
-        }
+
 
         /// <summary>
         /// Inicializa una nueva conexión y transacción
@@ -274,7 +233,7 @@ namespace SpotifyMusicChatBot.Infra.Application
                 var connection = CreateConnection();
                 await connection.OpenAsync(cancellationToken);
                 var transaction = connection.BeginTransaction();
-                
+
                 _logger?.LogDebug("🔄 Transacción inicializada exitosamente");
                 return (connection, transaction);
             }
@@ -285,162 +244,86 @@ namespace SpotifyMusicChatBot.Infra.Application
             }
         }
 
-/// <summary>
-/// Ejecuta una operación con transacción opcional (si es null, crea una nueva)
-/// </summary>
-public async Task<int> ExecuteWithTransactionAsync(string query, object parameters, SqlTransaction? transaction = null)
-{
-    bool shouldManageTransaction = transaction == null;
-    SqlConnection? connection = null;
-    SqlTransaction? managedTransaction = transaction;
-    
-    try
-    {
-        if (shouldManageTransaction)
+        /// <summary>
+        /// Ejecuta una operación con transacción opcional (si es null, crea una nueva)
+        /// </summary>
+        public async Task<int> ExecuteWithTransactionAsync(string query, object parameters, SqlTransaction? transaction = null)
         {
-            connection = CreateConnection();
-            await connection.OpenAsync();
-            managedTransaction = connection.BeginTransaction();
-        }
-        
-        // Usar la conexión correcta según el contexto
-        var connectionToUse = shouldManageTransaction ? connection! : managedTransaction!.Connection!;
-        int result = await connectionToUse.ExecuteAsync(query, parameters, managedTransaction);
-        
-        if (shouldManageTransaction)
-        {
-            await managedTransaction!.CommitAsync();
-            _logger?.LogInformation("✅ Transacción ExecuteWithTransactionAsync completada exitosamente. Filas afectadas: {AffectedRows}", result);
-        }
-        
-        return result;
-    }
-    catch (SqlException ex)
-    {
-        // Hacer rollback solo si estamos manejando la transacción
-        if (shouldManageTransaction && managedTransaction != null)
-        {
-            try
-            {
-                await managedTransaction.RollbackAsync();
-                _logger?.LogWarning("🔄 Transacción ExecuteWithTransactionAsync revertida (rollback)");
-            }
-            catch (Exception rollbackEx)
-            {
-                _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteWithTransactionAsync");
-            }
-        }
-        
-        _logger?.LogError(ex, "❌ Error SQL en ExecuteWithTransactionAsync | ErrorNumber: {ErrorNumber} | Query: {Query}", 
-            ex.Number, query);
-        throw new InvalidOperationException($"Error en ejecución SQL: {ex.Message}", ex);
-    }
-    catch (Exception ex)
-    {
-        // Hacer rollback solo si estamos manejando la transacción
-        if (shouldManageTransaction && managedTransaction != null)
-        {
-            try
-            {
-                await managedTransaction.RollbackAsync();
-                _logger?.LogWarning("🔄 Transacción ExecuteWithTransactionAsync revertida (rollback)");
-            }
-            catch (Exception rollbackEx)
-            {
-                _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteWithTransactionAsync");
-            }
-        }
-        
-        _logger?.LogError(ex, "❌ Error inesperado en ExecuteWithTransactionAsync | Query: {Query}", query);
-        throw new InvalidOperationException($"Error inesperado en ejecución: {ex.Message}", ex);
-    }
-    finally
-    {
-        // Solo hacer dispose de recursos que creamos nosotros
-        if (shouldManageTransaction)
-        {
-            managedTransaction?.Dispose();
-            connection?.Dispose();
-        }
-    }
-}
+            bool shouldManageTransaction = transaction == null;
+            SqlConnection? connection = null;
+            SqlTransaction? managedTransaction = transaction;
 
-/// <summary>
-/// Ejecuta una consulta escalar con transacción opcional
-/// </summary>
-public async Task<T> ExecuteScalarWithTransactionAsync<T>(string query, object parameters, SqlTransaction? transaction = null)
-{
-    bool shouldManageTransaction = transaction == null;
-    SqlConnection? connection = null;
-    SqlTransaction? managedTransaction = transaction;
-    
-    try
-    {
-        if (shouldManageTransaction)
-        {
-            connection = CreateConnection();
-            await connection.OpenAsync();
-            managedTransaction = connection.BeginTransaction();
-        }
-        
-        // Usar la conexión correcta según el contexto
-        var connectionToUse = shouldManageTransaction ? connection! : managedTransaction!.Connection!;
-        T? result = await connectionToUse.ExecuteScalarAsync<T>(query, parameters, managedTransaction);
-        
-        if (shouldManageTransaction)
-        {
-            await managedTransaction!.CommitAsync();
-            _logger?.LogInformation("✅ Transacción escalar ExecuteScalarWithTransactionAsync completada exitosamente.");
-        }
-        
-        return result!;
-    }
-    catch (SqlException ex)
-    {
-        if (shouldManageTransaction && managedTransaction != null)
-        {
             try
             {
-                await managedTransaction.RollbackAsync();
-                _logger?.LogWarning("🔄 Transacción escalar ExecuteScalarWithTransactionAsync revertida (rollback)");
+                if (shouldManageTransaction)
+                {
+                    connection = CreateConnection();
+                    await connection.OpenAsync();
+                    managedTransaction = connection.BeginTransaction();
+                }
+
+                // Usar la conexión correcta según el contexto
+                var connectionToUse = shouldManageTransaction ? connection! : managedTransaction!.Connection!;
+                int result = await connectionToUse.ExecuteAsync(query, parameters, managedTransaction);
+
+                if (shouldManageTransaction)
+                {
+                    await managedTransaction!.CommitAsync();
+                    _logger?.LogInformation("✅ Transacción ExecuteWithTransactionAsync completada exitosamente. Filas afectadas: {AffectedRows}", result);
+                }
+
+                return result;
             }
-            catch (Exception rollbackEx)
+            catch (SqlException ex)
             {
-                _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteScalarWithTransactionAsync");
+                // Hacer rollback solo si estamos manejando la transacción
+                if (shouldManageTransaction && managedTransaction != null)
+                {
+                    try
+                    {
+                        await managedTransaction.RollbackAsync();
+                        _logger?.LogWarning("🔄 Transacción ExecuteWithTransactionAsync revertida (rollback)");
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteWithTransactionAsync");
+                    }
+                }
+
+                _logger?.LogError(ex, "❌ Error SQL en ExecuteWithTransactionAsync | ErrorNumber: {ErrorNumber} | Query: {Query}",
+                    ex.Number, query);
+                throw new InvalidOperationException($"Error en ejecución SQL: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                // Hacer rollback solo si estamos manejando la transacción
+                if (shouldManageTransaction && managedTransaction != null)
+                {
+                    try
+                    {
+                        await managedTransaction.RollbackAsync();
+                        _logger?.LogWarning("🔄 Transacción ExecuteWithTransactionAsync revertida (rollback)");
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteWithTransactionAsync");
+                    }
+                }
+
+                _logger?.LogError(ex, "❌ Error inesperado en ExecuteWithTransactionAsync | Query: {Query}", query);
+                throw new InvalidOperationException($"Error inesperado en ejecución: {ex.Message}", ex);
+            }
+            finally
+            {
+                // Solo hacer dispose de recursos que creamos nosotros
+                if (shouldManageTransaction)
+                {
+                    managedTransaction?.Dispose();
+                    connection?.Dispose();
+                }
             }
         }
-        
-        _logger?.LogError(ex, "❌ Error SQL en ExecuteScalarWithTransactionAsync | ErrorNumber: {ErrorNumber} | Query: {Query}", 
-            ex.Number, query);
-        throw new InvalidOperationException($"Error en consulta SQL escalar: {ex.Message}", ex);
-    }
-    catch (Exception ex)
-    {
-        if (shouldManageTransaction && managedTransaction != null)
-        {
-            try
-            {
-                await managedTransaction.RollbackAsync();
-                _logger?.LogWarning("🔄 Transacción escalar ExecuteScalarWithTransactionAsync revertida (rollback)");
-            }
-            catch (Exception rollbackEx)
-            {
-                _logger?.LogError(rollbackEx, "❌ Error durante rollback en ExecuteScalarWithTransactionAsync");
-            }
-        }
-        
-        _logger?.LogError(ex, "❌ Error inesperado en ExecuteScalarWithTransactionAsync | Query: {Query}", query);
-        throw new InvalidOperationException($"Error inesperado en consulta escalar: {ex.Message}", ex);
-    }
-    finally
-    {
-        // Solo hacer dispose de recursos que creamos nosotros
-        if (shouldManageTransaction)
-        {
-            managedTransaction?.Dispose();
-            connection?.Dispose();
-        }
-    }
-}
+
+
     }
 }

@@ -164,27 +164,5 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
             }
         }
 
-        /// <summary>
-        /// Ejemplo de método que usa transacciones múltiples para guardar conversación y actualizar estadísticas
-        /// </summary>
-        public async Task<bool> SaveConversationWithStatsAsync(string userPrompt, string aiResponse, string sessionId)
-        {
-            try
-            {
-                // Ejemplo de múltiples operaciones en una sola transacción
-                int totalAffected = await ExecuteMultipleAsync(
-                    (ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse }),
-                    // Ejemplo: actualizar contador de conversaciones (esta consulta es ficticia como ejemplo)
-                    ("UPDATE ConversationStats SET TotalConversations = TotalConversations + 1 WHERE SessionId = @SessionId", new { SessionId = sessionId })
-                );
-                
-                return totalAffected > 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error saving conversation with stats: {ex.Message}");
-                return false;
-            }
-        }
     }
 }

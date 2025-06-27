@@ -1,6 +1,7 @@
 using MediatR;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
+using SpotifyMusicChatBot.API.Application.Mappers;
 
 namespace SpotifyMusicChatBot.API.Application.Query.GetConversationBySessionId
 {
@@ -18,21 +19,12 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetConversationBySessionId
             try
             {
                 IList<ConversationTurn> conversation = await _chatRepository.GetConversationBySessionIdAsync(request.SessionId);
-                  return new GetConversationBySessionIdResponse
-                {
-                    Conversation = conversation,
-                    StatusCode = 200,
-                    Message = "Conversación obtenida exitosamente"
-                };
+                return GetConversationBySessionIdMapper.ToSuccessResponse(conversation, request.SessionId);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving conversation by session ID: {SessionId}, Message: {Message}", request.SessionId, ex.Message);
-                return new GetConversationBySessionIdResponse
-                {
-                    StatusCode = 500,
-                    Message = "Error interno del servidor"
-                };
+                return GetConversationBySessionIdMapper.ToErrorResponse(500, "Error interno del servidor");
             }
         }
     }

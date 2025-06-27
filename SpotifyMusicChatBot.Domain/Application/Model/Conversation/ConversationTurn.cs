@@ -7,6 +7,7 @@ namespace SpotifyMusicChatBot.Domain.Application.Model.Conversation
     {
         public int Id { get; set; }
         public DateTime Timestamp { get; set; }
+        public string SessionId { get; set; } = string.Empty;
         public string UserPrompt { get; set; } = string.Empty;
         public string AiResponse { get; set; } = string.Empty;
     }

@@ -1,5 +1,6 @@
 using MediatR;
 using SpotifyMusicChatBot.Domain.Application.Repository;
+using SpotifyMusicChatBot.API.Application.Mappers;
 
 namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
 {
@@ -17,21 +18,12 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
             try
             {
                 IList<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsAsync();
-                  return new GetAllConversationsResponse
-                {
-                    Conversations = conversations,
-                    StatusCode = 200,
-                    Message = "Conversaciones obtenidas exitosamente"
-                };
+                return GetAllConversationsMapper.ToSuccessResponse(conversations);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving conversations");
-                return new GetAllConversationsResponse
-                {
-                    StatusCode = 500,
-                    Message = "Error al obtener las conversaciones"
-                };
+                return GetAllConversationsMapper.ToErrorResponse(500, "Error al obtener las conversaciones");
             }
         }
     }
