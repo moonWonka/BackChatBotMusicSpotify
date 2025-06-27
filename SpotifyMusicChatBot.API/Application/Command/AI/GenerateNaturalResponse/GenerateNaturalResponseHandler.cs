@@ -11,14 +11,14 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.GenerateNaturalResponse
     /// </summary>
     public class GenerateNaturalResponseHandler : IRequestHandler<GenerateNaturalResponseRequest, GenerateNaturalResponseResponse>
     {
-        private readonly IAIServiceFactory _aiServiceFactory;
+        private readonly IAIService _aiService;
         private readonly ILogger<GenerateNaturalResponseHandler> _logger;
 
         public GenerateNaturalResponseHandler(
-            IAIServiceFactory aiServiceFactory,
+            IAIService aiService,
             ILogger<GenerateNaturalResponseHandler> logger)
         {
-            _aiServiceFactory = aiServiceFactory;
+            _aiService = aiService;
             _logger = logger;
         }
 

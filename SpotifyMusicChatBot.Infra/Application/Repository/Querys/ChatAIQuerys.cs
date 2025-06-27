@@ -24,9 +24,9 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
                 FROM conversation_history
             )
             SELECT
-                session_id,
-                user_prompt,
-                timestamp
+                session_id AS SessionId,
+                user_prompt AS UserPrompt,
+                timestamp AS Timestamp
             FROM RankedConversations
             WHERE rn = 1
             ORDER BY timestamp DESC";
@@ -35,7 +35,12 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
         /// Query para obtener todos los turnos de una sesión específica
         /// </summary>
         internal const string GetConversationBySessionId = @"
-            SELECT id, timestamp, session_id, user_prompt, ai_response 
+            SELECT 
+                id AS Id, 
+                timestamp AS Timestamp, 
+                session_id AS SessionId, 
+                user_prompt AS UserPrompt, 
+                ai_response AS AiResponse 
             FROM conversation_history 
             WHERE session_id = @SessionId 
             ORDER BY id ASC";

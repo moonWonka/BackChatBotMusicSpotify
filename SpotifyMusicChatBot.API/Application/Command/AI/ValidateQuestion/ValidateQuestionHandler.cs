@@ -10,7 +10,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ValidateQuestion
     /// </summary>
     public class ValidateQuestionHandler : IRequestHandler<ValidateQuestionRequest, ValidateQuestionResponse>
     {
-        private readonly IAIServiceFactory _aiServiceFactory;
+        private readonly IAIService _aiService;
         private readonly ILogger<ValidateQuestionHandler> _logger;
 
         private readonly HashSet<string> _validMusicTopics = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -36,10 +36,10 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ValidateQuestion
         };
 
         public ValidateQuestionHandler(
-            IAIServiceFactory aiServiceFactory,
+            IAIService aiService,
             ILogger<ValidateQuestionHandler> logger)
         {
-            _aiServiceFactory = aiServiceFactory;
+            _aiService = aiService;
             _logger = logger;
         }
 
@@ -58,8 +58,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ValidateQuestion
                 var quickAnalysis = PerformQuickAnalysis(request.Question);
                 
                 // Validación con IA
-                var aiService = _aiServiceFactory.CreateAIService(request.AIModel);
-                var validationResult = await aiService.ValidateQuestionAsync(request.Question, cancellationToken);
+                var validationResult = await _aiService.ValidateQuestionAsync(request.Question, request.AIModel, cancellationToken);
 
                 if (!validationResult.IsSuccess)
                 {

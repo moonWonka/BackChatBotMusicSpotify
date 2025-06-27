@@ -11,14 +11,14 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.GenerateSQL
     /// </summary>
     public class GenerateSQLHandler : IRequestHandler<GenerateSQLRequest, GenerateSQLResponse>
     {
-        private readonly IAIServiceFactory _aiServiceFactory;
+        private readonly IAIService _aiService;
         private readonly ILogger<GenerateSQLHandler> _logger;
 
         public GenerateSQLHandler(
-            IAIServiceFactory aiServiceFactory,
+            IAIService aiService,
             ILogger<GenerateSQLHandler> logger)
         {
-            _aiServiceFactory = aiServiceFactory;
+            _aiService = aiService;
             _logger = logger;
         }
 
@@ -34,8 +34,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.GenerateSQL
             try
             {
                 // Generar SQL con IA
-                var aiService = _aiServiceFactory.CreateAIService(request.AIModel);
-                var sqlResult = await aiService.GenerateSQLAsync(request.Question, request.ResultLimit, cancellationToken);
+                var sqlResult = await _aiService.GenerateSQLAsync(request.Question, request.ResultLimit, request.AIModel, cancellationToken);
                 
                 if (!sqlResult.IsSuccess || string.IsNullOrEmpty(sqlResult.GeneratedSQL))
                 {

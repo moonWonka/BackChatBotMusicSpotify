@@ -12,16 +12,16 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ContextualizeQuestion
     public class ContextualizeQuestionHandler : IRequestHandler<ContextualizeQuestionRequest, ContextualizeQuestionResponse>
     {
         private readonly IChatBotRepository _repository;
-        private readonly IAIServiceFactory _aiServiceFactory;
+        private readonly IAIService _aiService;
         private readonly ILogger<ContextualizeQuestionHandler> _logger;
 
         public ContextualizeQuestionHandler(
             IChatBotRepository repository,
-            IAIServiceFactory aiServiceFactory,
+            IAIService aiService,
             ILogger<ContextualizeQuestionHandler> logger)
         {
             _repository = repository;
-            _aiServiceFactory = aiServiceFactory;
+            _aiService = aiService;
             _logger = logger;
         }
 
@@ -46,10 +46,10 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ContextualizeQuestion
                 }
 
                 // Analizar si la pregunta necesita contextualización
-                var aiService = _aiServiceFactory.CreateAIService(request.AIModel);
-                var contextualizationResult = await aiService.ContextualizeQuestionAsync(
+                var contextualizationResult = await _aiService.ContextualizeQuestionAsync(
                     request.Question, 
                     FormatConversationHistory(conversationHistory), 
+                    request.AIModel,
                     cancellationToken);
 
                 if (!contextualizationResult.IsSuccess)

@@ -1,7 +1,9 @@
 using MediatR;
 using SpotifyMusicChatBot.API.Configuration;
 using SpotifyMusicChatBot.Domain.Application.Repository;
+using SpotifyMusicChatBot.Domain.Application.Services;
 using SpotifyMusicChatBot.Infra.Application.Repository;
+using SpotifyMusicChatBot.Infra.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +105,9 @@ static void ConfigureServiceDependencies(IServiceCollection services)
 {
     // services.AddScoped<ISpotifyService, SpotifyService>();
     // services.AddScoped<IOpenAIService, OpenAIService>();
+    
+    // Servicio de IA - Usando implementación mock para desarrollo
+    services.AddScoped<IAIService, MockAIService>();
 }
 
 static void ConfigureRepositoryDependencies(IServiceCollection services)
