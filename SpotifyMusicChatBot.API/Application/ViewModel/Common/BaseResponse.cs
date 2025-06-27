@@ -7,7 +7,8 @@ namespace SpotifyMusicChatBot.API.Application.ViewModel.Common
     {
         public int StatusCode { get; set; } = 200;
         public string Message { get; set; } = "-";
-        public string Error { get; set; } = "-";        // Constructor por defecto (StatusCode = 200)
+        public string Error { get; set; } = "-";
+        public bool IsSuccess { get; set; } = true;        // Constructor por defecto (StatusCode = 200)
         public BaseResponse() { }        // Constructor para casos exitosos con mensaje
         public BaseResponse(string message)
         {
@@ -19,6 +20,7 @@ namespace SpotifyMusicChatBot.API.Application.ViewModel.Common
             StatusCode = statusCode;
             Message = message;
             Error = error;
+            IsSuccess = statusCode >= 200 && statusCode < 300;
         }
 
         // Métodos helper para respuestas comunes
