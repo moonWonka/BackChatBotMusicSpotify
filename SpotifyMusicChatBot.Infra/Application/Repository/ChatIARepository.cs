@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Data.SqlClient;
-using SpotifyMusicChatBot.Infra.Application;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 using SpotifyMusicChatBot.Domain.Application.Model.Search;
 using SpotifyMusicChatBot.Domain.Application.Repository;
