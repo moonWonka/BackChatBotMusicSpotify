@@ -5,6 +5,6 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
 {
     public class GetAllConversationsResponse : BaseResponse
     {
-        public IEnumerable<ConversationSession> Conversations { get; set; } = new List<ConversationSession>();
+        public IList<ConversationSession> Conversations { get; set; } = [];
     }
 }

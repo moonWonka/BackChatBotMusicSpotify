@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Data.SqlClient;
 using SpotifyMusicChatBot.Infra.Application;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 using SpotifyMusicChatBot.Domain.Application.Model.Search;
@@ -39,7 +40,24 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error saving conversation: {ex.Message}");
+                _logger?.LogError(ex, "❌ Error saving conversation: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Saves a conversation to the database with external transaction.
+        /// </summary>
+        public async Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, SqlTransaction transaction)
+        {
+            try
+            {
+                int result = await ExecuteWithTransactionAsync(ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse }, transaction);
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error saving conversation with transaction: {Message}", ex.Message);
                 return false;
             }
         }
@@ -47,11 +65,12 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Retrieves all unique conversation sessions from the database, showing the first prompt of each.
         /// </summary>
-        public async Task<IEnumerable<ConversationSession>> GetAllConversationsAsync()
+        public async Task<IList<ConversationSession>> GetAllConversationsAsync()
         {
             try
             {
-                return await GetAllAsync<ConversationSession>(ChatAIQuerys.GetAllConversations, new { });
+                var result = await GetAllAsync<ConversationSession>(ChatAIQuerys.GetAllConversations, new { });
+                return result.ToList();
             }
             catch (Exception ex)
             {
@@ -63,11 +82,12 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Retrieves all turns for a specific conversation session ID, ordered by timestamp.
         /// </summary>
-        public async Task<IEnumerable<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId)
+        public async Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId)
         {
             try
             {
-                return await GetAllAsync<ConversationTurn>(ChatAIQuerys.GetConversationBySessionId, new { SessionId = sessionId });
+                var result = await GetAllAsync<ConversationTurn>(ChatAIQuerys.GetConversationBySessionId, new { SessionId = sessionId });
+                return result.ToList();
             }
             catch (Exception ex)
             {
@@ -104,7 +124,24 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error eliminando sesión: {ex.Message}");
+                _logger?.LogError(ex, "❌ Error eliminando sesión: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Elimina una sesión completa del historial con transacción externa.
+        /// </summary>
+        public async Task<bool> DeleteSessionAsync(string sessionId, SqlTransaction transaction)
+        {
+            try
+            {
+                int deletedRows = await ExecuteWithTransactionAsync(ChatAIQuerys.DeleteSession, new { SessionId = sessionId }, transaction);
+                return deletedRows > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error eliminando sesión con transacción: {Message}", ex.Message);
                 return false;
             }
         }
@@ -112,12 +149,13 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Busca conversaciones que contengan el término de búsqueda.
         /// </summary>
-        public async Task<IEnumerable<SearchResult>> SearchConversationsAsync(string searchTerm)
+        public async Task<IList<SearchResult>> SearchConversationsAsync(string searchTerm)
         {
             try
             {
                 string searchPattern = $"%{searchTerm}%";
-                return await GetAllAsync<SearchResult>(ChatAIQuerys.SearchConversations, new { SearchPattern = searchPattern });
+                var result = await GetAllAsync<SearchResult>(ChatAIQuerys.SearchConversations, new { SearchPattern = searchPattern });
+                return result.ToList();
             }
             catch (Exception ex)
             {

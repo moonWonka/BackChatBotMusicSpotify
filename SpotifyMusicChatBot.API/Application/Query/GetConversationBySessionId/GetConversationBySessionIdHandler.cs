@@ -17,7 +17,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetConversationBySessionId
         {
             try
             {
-                IEnumerable<ConversationTurn> conversation = await _chatRepository.GetConversationBySessionIdAsync(request.SessionId);
+                IList<ConversationTurn> conversation = await _chatRepository.GetConversationBySessionIdAsync(request.SessionId);
                   return new GetConversationBySessionIdResponse
                 {
                     Conversation = conversation,

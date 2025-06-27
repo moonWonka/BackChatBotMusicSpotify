@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 using SpotifyMusicChatBot.Domain.Application.Model.Search;
 
@@ -19,14 +20,19 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId);
 
         /// <summary>
+        /// Guarda una conversación en la base de datos con transacción externa
+        /// </summary>
+        Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, SqlTransaction transaction);
+
+        /// <summary>
         /// Obtiene todas las sesiones de conversación únicas
         /// </summary>
-        Task<IEnumerable<ConversationSession>> GetAllConversationsAsync();
+        Task<IList<ConversationSession>> GetAllConversationsAsync();
 
         /// <summary>
         /// Obtiene todos los turnos de una sesión específica
         /// </summary>
-        Task<IEnumerable<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId);
+        Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId);
 
         /// <summary>
         /// Obtiene un resumen estadístico de una sesión
@@ -39,8 +45,13 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         Task<bool> DeleteSessionAsync(string sessionId);
 
         /// <summary>
+        /// Elimina una sesión completa del historial con transacción externa
+        /// </summary>
+        Task<bool> DeleteSessionAsync(string sessionId, SqlTransaction transaction);
+
+        /// <summary>
         /// Busca conversaciones que contengan un término específico
         /// </summary>
-        Task<IEnumerable<SearchResult>> SearchConversationsAsync(string searchTerm);
+        Task<IList<SearchResult>> SearchConversationsAsync(string searchTerm);
     }
 }

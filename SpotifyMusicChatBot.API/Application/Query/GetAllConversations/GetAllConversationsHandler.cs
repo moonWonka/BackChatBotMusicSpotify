@@ -16,7 +16,7 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
         {
             try
             {
-                IEnumerable<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsAsync();
+                IList<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsAsync();
                   return new GetAllConversationsResponse
                 {
                     Conversations = conversations,

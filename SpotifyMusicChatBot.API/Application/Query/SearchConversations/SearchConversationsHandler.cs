@@ -13,10 +13,12 @@ namespace SpotifyMusicChatBot.API.Application.Query.SearchConversations
         {
             _chatRepository = chatRepository;
             _logger = logger;
-        }        public async Task<SearchConversationsResponse> Handle(SearchConversationsRequest request, CancellationToken cancellationToken)
+        }
+        public async Task<SearchConversationsResponse> Handle(SearchConversationsRequest request, CancellationToken cancellationToken)
         {
             try
-            {                if (string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                if (string.IsNullOrWhiteSpace(request.SearchTerm))
                 {
                     return new SearchConversationsResponse
                     {
@@ -25,8 +27,8 @@ namespace SpotifyMusicChatBot.API.Application.Query.SearchConversations
                     };
                 }
 
-                IEnumerable<SearchResult> results = await _chatRepository.SearchConversationsAsync(request.SearchTerm);
-                
+                IList<SearchResult> results = await _chatRepository.SearchConversationsAsync(request.SearchTerm);
+
                 return new SearchConversationsResponse
                 {
                     Results = results,

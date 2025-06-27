@@ -1,5 +1,4 @@
 using MediatR;
-using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 
 namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
 {

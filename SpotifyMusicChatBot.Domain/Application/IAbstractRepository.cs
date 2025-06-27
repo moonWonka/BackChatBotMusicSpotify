@@ -64,5 +64,12 @@ namespace SpotifyMusicChatBot.Domain.Application
         /// </summary>
         /// <returns>True si la conexión es exitosa, false en caso contrario</returns>
         Task<bool> TestConnectionAsync();
+
+        /// <summary>
+        /// Inicializa una nueva conexión y transacción
+        /// </summary>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Tupla con la conexión y transacción inicializadas</returns>
+        Task<(Microsoft.Data.SqlClient.SqlConnection connection, Microsoft.Data.SqlClient.SqlTransaction transaction)> InitTransactionAsync(CancellationToken cancellationToken = default);
     }
 }
