@@ -1,10 +1,10 @@
-# Endpoints de IA - SpotifyMusicChatBot
+# Endpoint de IA - SpotifyMusicChatBot
 
-Este documento describe los nuevos endpoints para la interacción con modelos de IA (Gemini y Anthropic) implementados en el proyecto SpotifyMusicChatBot.
+Este documento describe el endpoint principal para la interacción con modelos de IA (Gemini y Anthropic) implementado en el proyecto SpotifyMusicChatBot.
 
 ## Descripción General
 
-Los endpoints de IA permiten procesar preguntas de usuarios sobre música siguiendo un flujo estructurado que incluye:
+El endpoint de IA permite procesar preguntas de usuarios sobre música siguiendo un flujo estructurado que incluye:
 
 1. **Contextualización** - Analiza si la pregunta necesita contexto del historial de conversación
 2. **Validación** - Verifica que la pregunta sea relevante para el dominio musical
@@ -12,12 +12,12 @@ Los endpoints de IA permiten procesar preguntas de usuarios sobre música siguie
 4. **Ejecución** - Ejecuta la consulta contra la base de datos de música
 5. **Respuesta Natural** - Convierte los resultados en una respuesta conversacional
 
-## Endpoints Disponibles
+## Endpoint Principal
 
-### 1. Procesar Pregunta Completa
+### Procesar Pregunta Completa
 **POST** `/api/AI/process-question`
 
-Procesa una pregunta completa siguiendo todo el flujo de IA.
+Procesa una pregunta completa siguiendo todo el flujo de IA de manera orquestada. Este es el **único endpoint necesario** para usar el chatbot.
 
 #### Request Body:
 ```json
