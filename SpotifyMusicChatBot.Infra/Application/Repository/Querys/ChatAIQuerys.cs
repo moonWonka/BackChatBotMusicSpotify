@@ -34,7 +34,7 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
         /// <summary>
         /// Query para obtener todos los turnos de una sesión específica
         /// </summary>
-        internal const string GetConversationBySessionId = @"
+        internal const string GetConversationByFirebaseUserId = @"
             SELECT 
                 id AS Id, 
                 timestamp AS Timestamp, 
@@ -42,8 +42,7 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
                 user_prompt AS UserPrompt, 
                 ai_response AS AiResponse 
             FROM conversation_history 
-            WHERE session_id = @SessionId 
-            ORDER BY id ASC";
+            WHERE firebase_user_id = @FirebaseUserId";
 
         /// <summary>
         /// Query para obtener un resumen estadístico de una sesión

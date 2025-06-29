@@ -81,11 +81,11 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Retrieves all turns for a specific conversation session ID, ordered by timestamp.
         /// </summary>
-        public async Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId)
+        public async Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string firebaseUserId)
         {
             try
             {
-                var result = await GetAllAsync<ConversationTurn>(ChatAIQuerys.GetConversationBySessionId, new { SessionId = sessionId });
+                var result = await GetAllAsync<ConversationTurn>(ChatAIQuerys.GetConversationByFirebaseUserId, new { FirebaseUserId = firebaseUserId });
                 return result.ToList();
             }
             catch (Exception ex)
