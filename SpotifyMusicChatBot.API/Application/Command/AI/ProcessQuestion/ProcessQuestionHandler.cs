@@ -13,6 +13,8 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
     public class ProcessQuestionHandler : IRequestHandler<ProcessQuestionRequest, ProcessQuestionResponse>
     {
         private readonly IAIService _aiService;
+        private readonly IChatBotRepository _chatRepository;
+
         private readonly ILogger<ProcessQuestionHandler> _logger;
 
         public ProcessQuestionHandler(
@@ -21,13 +23,14 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
             ILogger<ProcessQuestionHandler> logger)
         {
             _aiService = aiService;
+            _chatRepository = repository;
             _logger = logger;
         }
 
         public async Task<ProcessQuestionResponse> Handle(ProcessQuestionRequest request, CancellationToken cancellationToken)
         {
-            var stopwatch = Stopwatch.StartNew();
-            var response = new ProcessQuestionResponse
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            ProcessQuestionResponse response = new ProcessQuestionResponse
             {
                 OriginalQuestion = request.Question,
                 AIModelUsed = request.AIModel,
@@ -37,33 +40,13 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
             try
             {
                 // Paso 1: Obtener historial para contextualización
-                var conversationHistory = await GetConversationHistory(request.SessionId, request.ContextLimit);
+                IList<ConversationTurn> conversationHistory = await GetConversationHistory(request.SessionId, request.ContextLimit);
 
-                // Paso 2: Contextualización de la pregunta
-                var contextStopwatch = Stopwatch.StartNew();
-                var contextualizationResult = await _aiService.ContextualizeQuestionAsync(
-                    request.Question, 
-                    FormatConversationHistory(conversationHistory), 
+                // Paso 2: Validación de la pregunta
+                Stopwatch validationStopwatch = Stopwatch.StartNew();
+                ValidationResult validationResult = await _aiService.ValidateQuestionAsync(
+                    request.Question,
                     request.AIModel,
-                    cancellationToken);
-                contextStopwatch.Stop();
-                response.Steps.ContextualizationTimeMs = contextStopwatch.ElapsedMilliseconds;
-
-                if (!contextualizationResult.IsSuccess)
-                {
-                    response.IsSuccess = false;
-                    response.Message = contextualizationResult.Message ?? "Error al contextualizar la pregunta";
-                    return response;
-                }
-
-                response.ContextualizedQuestion = contextualizationResult.ContextualizedQuestion;
-                response.WasContextualized = contextualizationResult.WasContextualized;
-
-                // Paso 3: Validación de la pregunta
-                var validationStopwatch = Stopwatch.StartNew();
-                var validationResult = await _aiService.ValidateQuestionAsync(
-                    response.ContextualizedQuestion, 
-                    request.AIModel, 
                     cancellationToken);
                 validationStopwatch.Stop();
                 response.Steps.ValidationTimeMs = validationStopwatch.ElapsedMilliseconds;
@@ -81,7 +64,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                 {
                     response.IsSuccess = false;
                     response.ClarificationMessage = validationResult.ValidationReason;
-                    
+
                     if (validationResult.ValidationStatus == "FUERA_CONTEXTO")
                     {
                         response.Message = "La pregunta está fuera del contexto del asistente musical.";
@@ -90,16 +73,36 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                     {
                         response.Message = "La pregunta requiere aclaración.";
                     }
-                    
+
                     return response;
                 }
 
+                // Paso 3: Contextualización de la pregunta
+                Stopwatch contextStopwatch = Stopwatch.StartNew();
+                ContextualizationResult contextualizationResult = await _aiService.ContextualizeQuestionAsync(
+                    request.Question,
+                    FormatConversationHistory(conversationHistory),
+                    request.AIModel,
+                    cancellationToken);
+                contextStopwatch.Stop();
+                response.Steps.ContextualizationTimeMs = contextStopwatch.ElapsedMilliseconds;
+
+                if (!contextualizationResult.IsSuccess)
+                {
+                    response.IsSuccess = false;
+                    response.Message = contextualizationResult.Message ?? "Error al contextualizar la pregunta";
+                    return response;
+                }
+
+                response.ContextualizedQuestion = contextualizationResult.ContextualizedQuestion;
+                response.WasContextualized = contextualizationResult.WasContextualized;
+
                 // Paso 4: Generación de SQL
-                var sqlStopwatch = Stopwatch.StartNew();
-                var sqlResult = await _aiService.GenerateSQLAsync(
-                    response.ContextualizedQuestion, 
-                    50, 
-                    request.AIModel, 
+                Stopwatch sqlStopwatch = Stopwatch.StartNew();
+                SQLGenerationResult sqlResult = await _aiService.GenerateSQLAsync(
+                    response.ContextualizedQuestion,
+                    50,
+                    request.AIModel,
                     cancellationToken);
                 sqlStopwatch.Stop();
                 response.Steps.SQLGenerationTimeMs = sqlStopwatch.ElapsedMilliseconds;
@@ -114,20 +117,20 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                 response.GeneratedSQL = sqlResult.GeneratedSQL;
 
                 // Paso 5: Ejecución de SQL
-                var executionStopwatch = Stopwatch.StartNew();
-                var databaseResults = await ExecuteSQLQuery(response.GeneratedSQL);
+                Stopwatch executionStopwatch = Stopwatch.StartNew();
+                string databaseResults = await ExecuteSQLQuery(response.GeneratedSQL);
                 executionStopwatch.Stop();
                 response.Steps.SQLExecutionTimeMs = executionStopwatch.ElapsedMilliseconds;
 
                 response.DatabaseResults = databaseResults;
 
                 // Paso 6: Generación de respuesta natural
-                var naturalResponseStopwatch = Stopwatch.StartNew();
-                var naturalResult = await _aiService.GenerateNaturalResponseAsync(
-                    response.ContextualizedQuestion, 
-                    databaseResults, 
-                    "casual", 
-                    request.AIModel, 
+                Stopwatch naturalResponseStopwatch = Stopwatch.StartNew();
+                NaturalResponseResult naturalResult = await _aiService.GenerateNaturalResponseAsync(
+                    response.ContextualizedQuestion,
+                    databaseResults,
+                    "casual",
+                    request.AIModel,
                     cancellationToken);
                 naturalResponseStopwatch.Stop();
                 response.Steps.NaturalResponseTimeMs = naturalResponseStopwatch.ElapsedMilliseconds;
@@ -146,7 +149,7 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                 response.IsSuccess = true;
                 response.Message = "Pregunta procesada exitosamente";
 
-                _logger.LogInformation("Pregunta procesada exitosamente para sesión {SessionId} con modelo {AIModel} en {ElapsedMs}ms", 
+                _logger.LogInformation("Pregunta procesada exitosamente para sesión {SessionId} con modelo {AIModel} en {ElapsedMs}ms",
                     request.SessionId, request.AIModel, response.ProcessingTimeMs);
 
                 return response;
@@ -158,33 +161,30 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                 response.IsSuccess = false;
                 response.Message = "Error interno al procesar la pregunta";
 
-                _logger.LogError(ex, "Error al procesar pregunta para sesión {SessionId} con modelo {AIModel}", 
+                _logger.LogError(ex, "Error al procesar pregunta para sesión {SessionId} con modelo {AIModel}",
                     request.SessionId, request.AIModel);
                 return response;
             }
         }
 
-        private async Task<List<ConversationTurn>> GetConversationHistory(string sessionId, int contextLimit)
+        private async Task<IList<ConversationTurn>> GetConversationHistory(string firebaseUserId, int contextLimit)
         {
             try
             {
                 // Si includeContext es false o contextLimit es 0, retorna lista vacía
-                if (contextLimit <= 0)
-                    return new List<ConversationTurn>();
+                if (contextLimit <= 0) return [];
 
-                // Aquí se implementaría la obtención real del historial
-                // Por ahora retornamos lista vacía
-                await Task.Delay(10); // Simular consulta
-                return new List<ConversationTurn>();
+                IList<ConversationTurn> conversations = await _chatRepository.GetConversationBySessionIdAsync(firebaseUserId);
+                return conversations;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error al obtener historial de conversación para sesión {SessionId}", sessionId);
-                return new List<ConversationTurn>();
+                _logger.LogWarning(ex, "Error al obtener historial de conversación para sesión {firebase}", firebaseUserId);
+                return [];
             }
         }
 
-        private string FormatConversationHistory(List<ConversationTurn> conversationHistory)
+        private string FormatConversationHistory(IList<ConversationTurn> conversationHistory)
         {
             if (!conversationHistory.Any())
                 return string.Empty;
@@ -202,10 +202,15 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
 
         private async Task<string> ExecuteSQLQuery(string sqlQuery)
         {
-            // Aquí se implementaría la ejecución real de la consulta SQL
-            // Por ahora retornamos datos simulados
-            await Task.Delay(100); // Simular latencia de BD
-            return "Resultados simulados de la base de datos";
+            try
+            {
+                return await _chatRepository.ExecuteRawSqlAsync(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error ejecutando consulta SQL: {Message}", ex.Message);
+                return $"Error ejecutando consulta SQL: {ex.Message}";
+            }
         }
     }
 }

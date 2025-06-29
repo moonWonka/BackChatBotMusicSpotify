@@ -107,7 +107,9 @@ static void ConfigureServiceDependencies(IServiceCollection services)
     // services.AddScoped<IOpenAIService, OpenAIService>();
     
     // Servicio de IA - Usando implementación mock para desarrollo
-    services.AddScoped<IAIService, MockAIService>();
+    services.AddScoped<IAIService, AIService>();
+    services.AddScoped<IGeminiIAService, GeminiIAService>();
+    services.AddScoped<IAnthropicIAService, AnthropicIAService>();
 }
 
 static void ConfigureRepositoryDependencies(IServiceCollection services)

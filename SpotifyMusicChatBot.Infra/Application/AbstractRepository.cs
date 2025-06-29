@@ -1,11 +1,10 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Dapper;
-using SpotifyMusicChatBot.Domain.Application;
 
 namespace SpotifyMusicChatBot.Infra.Application
 {
-    public abstract class AbstractRepository : IAbstractRepository
+    public abstract class AbstractRepository
     {
         protected readonly string _connectionString;
         protected readonly ILogger? _logger;

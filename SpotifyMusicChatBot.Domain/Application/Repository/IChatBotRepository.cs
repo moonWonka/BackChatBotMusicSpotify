@@ -32,7 +32,7 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         /// <summary>
         /// Obtiene todos los turnos de una sesión específica
         /// </summary>
-        Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string sessionId);
+        Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string firebaseUserId);
 
         /// <summary>
         /// Obtiene un resumen estadístico de una sesión
@@ -53,5 +53,10 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         /// Busca conversaciones que contengan un término específico
         /// </summary>
         Task<IList<SearchResult>> SearchConversationsAsync(string searchTerm);
+
+        /// <summary>
+        /// Ejecuta una sentencia SQL arbitraria y retorna el resultado como string
+        /// </summary>
+        Task<string> ExecuteRawSqlAsync(string sqlQuery);
     }
 }

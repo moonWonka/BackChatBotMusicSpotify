@@ -67,16 +67,5 @@ namespace SpotifyMusicChatBot.Domain.Application.Services
         /// <param name="modelName">Nombre del modelo</param>
         /// <returns>True si el modelo está disponible</returns>
         Task<bool> IsModelAvailableAsync(string modelName);
-
-        /// <summary>
-        /// Ejecuta un prompt personalizado directamente
-        /// </summary>
-        /// <param name="prompt">Prompt a ejecutar</param>
-        /// <param name="modelName">Modelo a utilizar</param>
-        /// <param name="temperature">Nivel de creatividad (0.0 - 1.0)</param>
-        /// <param name="maxTokens">Máximo número de tokens</param>
-        /// <param name="cancellationToken">Token de cancelación</param>
-        /// <returns>Respuesta del modelo</returns>
-        Task<AIModelResponse> ExecutePromptAsync(string prompt, string modelName = "Gemini", float temperature = 0.7f, int maxTokens = 1000, CancellationToken cancellationToken = default);
     }
 }
