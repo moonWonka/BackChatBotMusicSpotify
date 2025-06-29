@@ -53,5 +53,10 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         /// Busca conversaciones que contengan un término específico
         /// </summary>
         Task<IList<SearchResult>> SearchConversationsAsync(string searchTerm);
+
+        /// <summary>
+        /// Ejecuta una sentencia SQL arbitraria y retorna el resultado como string
+        /// </summary>
+        Task<string> ExecuteRawSqlAsync(string sqlQuery);
     }
 }

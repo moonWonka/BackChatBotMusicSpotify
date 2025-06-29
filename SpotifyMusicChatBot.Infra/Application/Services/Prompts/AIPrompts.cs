@@ -58,15 +58,14 @@ namespace SpotifyMusicChatBot.Domain.Application.Services.Prompts
             PREGUNTA DEL USUARIO: ""{pregunta}""
 
             CRITERIOS DE VALIDACIÓN:
-            1. VÁLIDA: La pregunta está claramente relacionada con música y puede ser respondida
-            2. ACLARAR: La pregunta es muy ambigua, demasiado general o necesita más información específica
+            1. VÁLIDA: La pregunta está claramente relacionada con música y puede ser respondida, incluso si es general o no específica.
+            2. ACLARAR: La pregunta no está clara, es ambigua o no se entiende la intención musical.
             3. FUERA_CONTEXTO: La pregunta no está relacionada con música, artistas o canciones
 
             INSTRUCCIONES:
-            - Analiza cuidadosamente el contenido y la intención de la pregunta
-            - Considera si se puede responder con información musical
+            - Si la pregunta está dentro del contexto musical, márcala como VÁLIDA aunque sea general.
+            - Solo marca como ACLARAR si realmente no se entiende la intención musical.
             - Si detectas términos no musicales dominantes, marca como FUERA_CONTEXTO
-            - Si la pregunta es muy vaga o general, marca como ACLARAR
 
             Responde únicamente con una de estas opciones:
             - ""VALIDA""

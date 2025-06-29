@@ -163,5 +163,23 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
             }
         }
 
+        /// <summary>
+        /// Ejecuta una sentencia SQL arbitraria y retorna el resultado como string
+        /// </summary>
+        public async Task<string> ExecuteRawSqlAsync(string sqlQuery)
+        {
+            try
+            {
+                // Utiliza GetAllAsync<dynamic> para ejecutar la consulta y obtener los resultados
+                var result = await GetAllAsync<dynamic>(sqlQuery, new { });
+                // Serializa el resultado a JSON para retornarlo como string
+                return System.Text.Json.JsonSerializer.Serialize(result);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error ejecutando SQL arbitrario: {Message}", ex.Message);
+                return $"Error ejecutando SQL: {ex.Message}";
+            }
+        }
     }
 }

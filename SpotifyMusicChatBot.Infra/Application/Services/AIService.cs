@@ -77,30 +77,68 @@ namespace SpotifyMusicChatBot.Infra.Application.Services
             string prompt = AIPrompts.PROMPT_VALIDAR_PREGUNTA.Replace("{pregunta}", question);
             AIModelResponse response = await ExecutePromptAsync(prompt, modelName, cancellationToken: cancellationToken);
 
-            // Aquí deberías parsear la respuesta del modelo para extraer la información relevante
-            // Por ahora, ejemplo simple: si la respuesta contiene "contexto" se requiere más contexto
-            bool necesitaContexto = response.Content.Contains("contexto", StringComparison.OrdinalIgnoreCase);
+            string respuesta = response.Content.Trim().ToUpperInvariant();
+            bool esValida = respuesta == "VALIDA" || respuesta.StartsWith("VALIDA");
+            bool necesitaAclarar = respuesta.StartsWith("ACLARAR");
+            bool fueraContexto = respuesta.StartsWith("FUERA_CONTEXTO");
 
             return new ValidationResult
             {
-                ValidationStatus = necesitaContexto ? "ACLARAR" : "ACEPTAR",
-                ValidationReason = necesitaContexto ? "Se requiere más contexto" : "Pregunta válida",
-                IdentifiedCategory = necesitaContexto ? "Ambigua" : "Musical",
-                IsSuccess = true,
+                ValidationStatus = esValida ? "VALIDA" : (necesitaAclarar ? "ACLARAR" : (fueraContexto ? "FUERA_CONTEXTO" : "DESCONOCIDO")),
+                ValidationReason = necesitaAclarar ? respuesta : (esValida ? "Pregunta válida" : (fueraContexto ? "Pregunta fuera de contexto musical" : "No se pudo determinar el estado de la pregunta")),
+                IdentifiedCategory = esValida ? "Musical" : (fueraContexto ? "Fuera de contexto" : "Ambigua"),
+                IsSuccess = esValida,
                 ModelUsed = modelName
             };
         }
 
         public async Task<SQLGenerationResult> GenerateSQLAsync(string question, int resultLimit = 50, string modelName = "Gemini", CancellationToken cancellationToken = default)
         {
-            // TODO: Implementar lógica real
-            throw new NotImplementedException();
+            // Construir el prompt usando la plantilla y la pregunta del usuario
+            string prompt = AIPrompts.PROMPT_GENERAR_SQL
+                .Replace("{pregunta}", question)
+                .Replace("{limite_resultados}", resultLimit.ToString());
+
+            AIModelResponse response = await ExecutePromptAsync(prompt, modelName, cancellationToken: cancellationToken);
+
+            // El modelo debe responder solo con la sentencia SQL o el mensaje de validación
+            string sql = response.Content.Trim();
+            bool isSuccess = !sql.StartsWith("No es posible responder", StringComparison.OrdinalIgnoreCase);
+
+            return new SQLGenerationResult
+            {
+                GeneratedSQL = sql,
+                IsSuccess = isSuccess,
+                Message = isSuccess ? "Consulta SQL generada correctamente" : sql
+            };
         }
 
         public async Task<NaturalResponseResult> GenerateNaturalResponseAsync(string question, string databaseResults, string tone = "casual", string modelName = "Gemini", CancellationToken cancellationToken = default)
         {
-            // TODO: Implementar lógica real
-            throw new NotImplementedException();
+            bool hasResults = !string.IsNullOrWhiteSpace(databaseResults) && databaseResults.Trim() != "[]" && databaseResults.Trim() != "{}";
+            string prompt;
+            if (hasResults)
+            {
+                prompt = AIPrompts.PROMPT_RESPUESTA_NATURAL
+                    .Replace("{pregunta}", question)
+                    .Replace("{resultados_db}", databaseResults)
+                    .Replace("{tono}", tone);
+            }
+            else
+            {
+                // Si no hay resultados, el prompt debe dejarlo claro
+                prompt = $"No hay resultados en la base de datos para la pregunta: '{question}'. Responde de forma natural y amable, tono: {tone}.";
+            }
+
+            AIModelResponse response = await ExecutePromptAsync(prompt, modelName, cancellationToken: cancellationToken);
+            string naturalResponse = response.Content.Trim();
+
+            return new NaturalResponseResult
+            {
+                NaturalResponse = naturalResponse,
+                IsSuccess = !string.IsNullOrWhiteSpace(naturalResponse),
+                Message = string.IsNullOrWhiteSpace(naturalResponse) ? "No se pudo generar una respuesta natural" : "Respuesta generada correctamente"
+            };
         }
 
         public async Task<AnalysisResult> AnalyzeAndImproveResponseAsync(string question, string response, string modelName = "Gemini", CancellationToken cancellationToken = default)

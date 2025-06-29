@@ -202,10 +202,15 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
 
         private async Task<string> ExecuteSQLQuery(string sqlQuery)
         {
-            // Aquí se implementaría la ejecución real de la consulta SQL
-            // Por ahora retornamos datos simulados
-            await Task.Delay(100); // Simular latencia de BD
-            return "Resultados simulados de la base de datos";
+            try
+            {
+                return await _chatRepository.ExecuteRawSqlAsync(sqlQuery);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error ejecutando consulta SQL: {Message}", ex.Message);
+                return $"Error ejecutando consulta SQL: {ex.Message}";
+            }
         }
     }
 }
