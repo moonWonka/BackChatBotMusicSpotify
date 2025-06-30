@@ -101,8 +101,17 @@ namespace SpotifyMusicChatBot.Infra.Application.Services
 
             AIModelResponse response = await ExecutePromptAsync(prompt, modelName, cancellationToken: cancellationToken);
 
-            // El modelo debe responder solo con la sentencia SQL o el mensaje de validación
+            // Limpiar solo si la respuesta viene en bloque ```sql ... ```
             string sql = response.Content.Trim();
+            if (sql.StartsWith("```sql", StringComparison.OrdinalIgnoreCase) && sql.EndsWith("```"))
+            {
+                // Eliminar la primera línea (```sql) y la última línea (```
+                var lines = sql.Split('\n');
+                if (lines.Length >= 3)
+                {
+                    sql = string.Join("\n", lines.Skip(1).Take(lines.Length - 2)).Trim();
+                }
+            }
             bool isSuccess = !sql.StartsWith("No es posible responder", StringComparison.OrdinalIgnoreCase);
 
             return new SQLGenerationResult
