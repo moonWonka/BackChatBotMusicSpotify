@@ -114,7 +114,11 @@ namespace SpotifyMusicChatBot.API.Application.Command.AI.ProcessQuestion
                     return response;
                 }
 
-                response.GeneratedSQL = sqlResult.GeneratedSQL;
+                response.GeneratedSQL = sqlResult.GeneratedSQL.Trim();
+                if (response.GeneratedSQL.ToLower().StartsWith("sql"))
+                {
+                    response.GeneratedSQL = response.GeneratedSQL.Substring(3).Trim();
+                }
 
                 // Paso 5: Ejecución de SQL
                 Stopwatch executionStopwatch = Stopwatch.StartNew();
