@@ -83,20 +83,23 @@ namespace SpotifyMusicChatBot.Domain.Application.Services.Prompts
             -- =======================================
             CREATE TABLE artists (
                 artist_id INT IDENTITY(1,1) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL UNIQUE
+                name NVARCHAR(255) NOT NULL UNIQUE
             );
 
             -- =======================================
-            -- TABLA DE TRACKS
+            -- TABLA DE CANCIONES (TRACKS)
             -- =======================================
             CREATE TABLE tracks (
-                track_id INT IDENTITY(1,1) PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
+                track_id NVARCHAR(50) PRIMARY KEY,
+                name NVARCHAR(255) NOT NULL,
                 artist_id INT NOT NULL,
-                duration_ms INT NOT NULL,
-                popularity INT CHECK (popularity >= 0 AND popularity <= 100),
+                album_name NVARCHAR(255),
                 release_date DATE,
-                explicit BIT DEFAULT 0,
+                duration_ms INT,
+                key_signature INT,
+                mode INT,
+                popularity INT,
+                genres NVARCHAR(MAX),
                 FOREIGN KEY (artist_id) REFERENCES artists(artist_id)
             );
 
@@ -104,21 +107,19 @@ namespace SpotifyMusicChatBot.Domain.Application.Services.Prompts
             -- TABLA DE CARACTERÍSTICAS DE AUDIO
             -- =======================================
             CREATE TABLE audio_features (
-                feature_id INT IDENTITY(1,1) PRIMARY KEY,
-                track_id INT NOT NULL,
-                danceability FLOAT CHECK (danceability >= 0 AND danceability <= 1),
-                energy FLOAT CHECK (energy >= 0 AND energy <= 1),
-                loudness FLOAT,
-                speechiness FLOAT CHECK (speechiness >= 0 AND speechiness <= 1),
-                acousticness FLOAT CHECK (acousticness >= 0 AND acousticness <= 1),
-                instrumentalness FLOAT CHECK (instrumentalness >= 0 AND instrumentalness <= 1),
-                liveness FLOAT CHECK (liveness >= 0 AND liveness <= 1),
-                valence FLOAT CHECK (valence >= 0 AND valence <= 1),
-                tempo FLOAT CHECK (tempo > 0),
-                time_signature INT CHECK (time_signature >= 1 AND time_signature <= 7),
+                track_id NVARCHAR(50) PRIMARY KEY,
+                energy DECIMAL(5,3),
+                tempo DECIMAL(6,2),
+                danceability DECIMAL(5,3),
+                loudness DECIMAL(7,3),
+                liveness DECIMAL(5,3),
+                valence DECIMAL(5,3),
+                speechiness DECIMAL(5,3),
+                instrumentalness DECIMAL(5,3),
+                acousticness DECIMAL(5,3),
                 FOREIGN KEY (track_id) REFERENCES tracks(track_id)
             );
-
+            
             Y la siguiente consulta en lenguaje natural:
             ""{pregunta}""
 
