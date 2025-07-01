@@ -29,19 +29,19 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
                     // Inicializar sessionId
                     string sessionId = request.SessionId ?? _chatRepository.GenerateSessionId();
 
-                    // Guardar la conversación
-                    bool success = await _chatRepository.SaveConversationAsync(request.UserPrompt, request.AiResponse, sessionId, transaction);
+                    // Guardar la conversación con firebase_user_id
+                    bool success = await _chatRepository.SaveConversationAsync(request.UserPrompt, request.AiResponse, sessionId, request.FirebaseUserId, transaction);
 
                     if (success)
                     {
                         await transaction.CommitAsync(cancellationToken);
-                        _logger.LogInformation("✅ Conversación guardada exitosamente para sessionId: {SessionId}", sessionId);
+                        _logger.LogInformation("✅ Conversación guardada exitosamente para sessionId: {SessionId}, firebaseUserId: {FirebaseUserId}", sessionId, request.FirebaseUserId);
                         return SaveConversationMapper.ToSuccessResponse(sessionId);
                     }
                     else
                     {
                         await transaction.RollbackAsync(cancellationToken);
-                        _logger.LogWarning("⚠️ No se pudo guardar la conversación para sessionId: {SessionId}", sessionId);
+                        _logger.LogWarning("⚠️ No se pudo guardar la conversación para sessionId: {SessionId}, firebaseUserId: {FirebaseUserId}", sessionId, request.FirebaseUserId);
                         return SaveConversationMapper.ToErrorResponse(400, "Error al guardar la conversación");
                     }
                 }

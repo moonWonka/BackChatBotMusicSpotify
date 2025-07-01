@@ -30,11 +30,11 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Saves a conversation to the database.
         /// </summary>
-        public async Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId)
+        public async Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, string firebaseUserId)
         {
             try
             {
-                int result = await ExecuteAsync(ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse });
+                int result = await ExecuteAsync(ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse, FirebaseUserId = firebaseUserId });
                 return result > 0;
             }
             catch (Exception ex)
@@ -47,11 +47,11 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
         /// <summary>
         /// Saves a conversation to the database with external transaction.
         /// </summary>
-        public async Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, SqlTransaction transaction)
+        public async Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, string firebaseUserId, SqlTransaction transaction)
         {
             try
             {
-                int result = await ExecuteWithTransactionAsync(ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse }, transaction);
+                int result = await ExecuteWithTransactionAsync(ChatAIQuerys.SaveConversation, new { SessionId = sessionId, UserPrompt = userPrompt, AiResponse = aiResponse, FirebaseUserId = firebaseUserId }, transaction);
                 return result > 0;
             }
             catch (Exception ex)

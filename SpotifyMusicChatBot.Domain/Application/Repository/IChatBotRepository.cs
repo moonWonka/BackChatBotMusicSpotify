@@ -17,12 +17,12 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         /// <summary>
         /// Guarda una conversación en la base de datos
         /// </summary>
-        Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId);
+        Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, string firebaseUserId);
 
         /// <summary>
         /// Guarda una conversación en la base de datos con transacción externa
         /// </summary>
-        Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, SqlTransaction transaction);
+        Task<bool> SaveConversationAsync(string userPrompt, string aiResponse, string sessionId, string firebaseUserId, SqlTransaction transaction);
 
         /// <summary>
         /// Obtiene todas las sesiones de conversación únicas

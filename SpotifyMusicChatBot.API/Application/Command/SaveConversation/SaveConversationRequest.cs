@@ -22,5 +22,12 @@ namespace SpotifyMusicChatBot.API.Application.Command.SaveConversation
         /// </summary>
         [StringLength(50, ErrorMessage = "El ID de sesión no puede exceder 50 caracteres")]
         public string? SessionId { get; set; }
+
+        /// <summary>
+        /// ID del usuario de Firebase para asociar la conversación al usuario correcto
+        /// </summary>
+        [Required(ErrorMessage = "El ID de usuario de Firebase es requerido")]
+        [StringLength(100, ErrorMessage = "El ID de usuario de Firebase no puede exceder 100 caracteres")]
+        public string FirebaseUserId { get; set; } = string.Empty;
     }
 }

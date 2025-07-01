@@ -8,8 +8,8 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
         /// Query para insertar una nueva conversación en el historial
         /// </summary>
         internal const string SaveConversation = @"
-            INSERT INTO conversation_history (session_id, user_prompt, ai_response) 
-            VALUES (@SessionId, @UserPrompt, @AiResponse)";
+            INSERT INTO conversation_history (session_id, user_prompt, ai_response, firebase_user_id) 
+            VALUES (@SessionId, @UserPrompt, @AiResponse, @FirebaseUserId)";
 
         /// <summary>
         /// Query para obtener todas las sesiones de conversación únicas con el primer prompt
