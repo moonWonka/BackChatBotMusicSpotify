@@ -195,8 +195,52 @@ namespace SpotifyMusicChatBot.Domain.Application.Services.Prompts
 
             Si no hay resultados o están vacíos, responde:
             ""No encontré información específica sobre lo que me preguntas. Podrías reformular tu pregunta o ser más específico sobre qué artista, canción o información musical te interesa.""
-
+            
             Genera una respuesta natural y útil basada en estos lineamientos.";
+
+        /// <summary>
+        /// Prompt para filtrar contenido basado en términos excluidos del usuario
+        /// </summary>
+        public const string PROMPT_FILTRAR_TERMINOS_EXCLUIDOS = @"
+            Eres un filtro de contenido musical que debe revisar respuestas antes de mostrarlas al usuario.
+
+            TÉRMINOS EXCLUIDOS DEL USUARIO:
+            {terminos_excluidos}
+
+            RESPUESTA A REVISAR:
+            ""{respuesta_original}""
+
+            INSTRUCCIONES DE FILTRADO:
+            1. Revisa la respuesta completa en busca de cualquier término que coincida con la lista de términos excluidos
+            2. Busca coincidencias exactas y parciales (insensible a mayúsculas/minúsculas)
+            3. Considera variaciones y formas relacionadas de los términos excluidos
+            4. Si encuentras términos excluidos, elimina o reemplaza esa información
+            5. Mantén la coherencia y fluidez del texto después del filtrado
+            6. Si toda la respuesta debe ser filtrada, genera una respuesta alternativa
+
+            CATEGORÍAS DE TÉRMINOS A FILTRAR:
+            - Artistas: Nombres de artistas específicos excluidos
+            - Géneros: Géneros musicales que el usuario no quiere ver
+            - Palabras clave: Términos generales relacionados con música
+
+            REGLAS DE REEMPLAZO:
+            - Si eliminas un artista específico, puedes sugerir ""otros artistas del género""
+            - Si eliminas un género, puedes mencionar ""otros estilos musicales""
+            - Si eliminas palabras clave, busca sinónimos o términos relacionados
+            - Mantén el tono natural y útil de la respuesta
+            - No menciones que se ha aplicado filtrado
+
+            FORMATO DE RESPUESTA:
+            Si NO hay términos excluidos en la respuesta:
+            ""RESPUESTA_LIMPIA: [respuesta original sin cambios]""
+
+            Si SÍ hay términos excluidos y se puede filtrar:
+            ""RESPUESTA_FILTRADA: [respuesta modificada sin los términos excluidos]""
+
+            Si toda la respuesta debe ser filtrada:
+            ""RESPUESTA_ALTERNATIVA: Lo siento, no puedo proporcionar información específica sobre esos términos debido a tus preferencias. ¿Te gustaría explorar otros artistas o géneros musicales?""
+
+            Analiza la respuesta y aplica el filtrado apropiado.";
 
         /// <summary>
         /// Prompt para analizar y ajustar respuestas del modelo

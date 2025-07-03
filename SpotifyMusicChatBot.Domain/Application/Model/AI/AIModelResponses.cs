@@ -231,4 +231,30 @@ namespace SpotifyMusicChatBot.Domain.Application.Services
         /// </summary>
         public DateTime LastUpdated { get; set; }
     }
+
+    /// <summary>
+    /// Resultado del filtrado de términos excluidos
+    /// </summary>
+    public class FilterResult : AIModelResponse
+    {
+        /// <summary>
+        /// Respuesta filtrada
+        /// </summary>
+        public string FilteredContent { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Indica si se encontraron términos excluidos
+        /// </summary>
+        public bool ContainsExcludedTerms { get; set; }
+
+        /// <summary>
+        /// Lista de términos excluidos encontrados
+        /// </summary>
+        public List<string> FoundExcludedTerms { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Tipo de filtro aplicado
+        /// </summary>
+        public string FilterType { get; set; } = string.Empty; // RESPUESTA_LIMPIA, RESPUESTA_FILTRADA, RESPUESTA_ALTERNATIVA
+    }
 }

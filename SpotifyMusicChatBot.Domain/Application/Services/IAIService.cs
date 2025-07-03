@@ -46,6 +46,18 @@ namespace SpotifyMusicChatBot.Domain.Application.Services
         Task<NaturalResponseResult> GenerateNaturalResponseAsync(string question, string databaseResults, string tone = "casual", string modelName = "Gemini", CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Genera una respuesta en lenguaje natural filtrada por términos excluidos del usuario
+        /// </summary>
+        /// <param name="question">Pregunta original</param>
+        /// <param name="databaseResults">Resultados de la base de datos</param>
+        /// <param name="firebaseUserId">ID del usuario para aplicar filtros personalizados</param>
+        /// <param name="tone">Tono de la respuesta</param>
+        /// <param name="modelName">Modelo a utilizar (Gemini, Anthropic)</param>
+        /// <param name="cancellationToken">Token de cancelación</param>
+        /// <returns>Respuesta en lenguaje natural filtrada</returns>
+        Task<NaturalResponseResult> GenerateFilteredNaturalResponseAsync(string question, string databaseResults, string firebaseUserId, string tone = "casual", string modelName = "Gemini", CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Analiza y mejora una respuesta existente
         /// </summary>
         /// <param name="question">Pregunta original</param>

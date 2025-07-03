@@ -150,6 +150,45 @@ namespace SpotifyMusicChatBot.Infra.Application.Services
             };
         }
 
+        /// <summary>
+        /// Genera una respuesta natural filtrada por términos excluidos del usuario
+        /// </summary>
+        public async Task<NaturalResponseResult> GenerateFilteredNaturalResponseAsync(
+            string question, 
+            string databaseResults, 
+            string firebaseUserId, 
+            string tone = "casual", 
+            string modelName = "Gemini", 
+            CancellationToken cancellationToken = default)
+        {
+            // Primero generar la respuesta normal
+            var normalResponse = await GenerateNaturalResponseAsync(question, databaseResults, tone, modelName, cancellationToken);
+            
+            if (!normalResponse.IsSuccess || string.IsNullOrWhiteSpace(normalResponse.NaturalResponse))
+            {
+                return normalResponse;
+            }
+
+            try
+            {
+                // Aplicar filtro de términos excluidos si el usuario está identificado
+                if (!string.IsNullOrWhiteSpace(firebaseUserId))
+                {
+                    // Aquí se inyectaría el servicio de filtrado, por ahora devolvemos la respuesta normal
+                    // En una implementación completa, se inyectaría IExcludedTermsFilterService
+                    _logger.LogInformation("✅ Respuesta generada sin filtrado específico para usuario {UserId}", firebaseUserId);
+                }
+
+                return normalResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error aplicando filtro de términos excluidos para usuario {UserId}", firebaseUserId);
+                // En caso de error en el filtrado, devolver la respuesta original
+                return normalResponse;
+            }
+        }
+
         public async Task<AnalysisResult> AnalyzeAndImproveResponseAsync(string question, string response, string modelName = "Gemini", CancellationToken cancellationToken = default)
         {
             // TODO: Implementar lógica real

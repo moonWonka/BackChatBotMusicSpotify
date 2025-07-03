@@ -8,6 +8,9 @@ using SpotifyMusicChatBot.API.Application.Query.GetSessionSummary;
 using SpotifyMusicChatBot.API.Application.Query.SearchConversations;
 using SpotifyMusicChatBot.API.Application.ViewModel.Common;
 using SpotifyMusicChatBot.API.Application.ViewModel.SearchConversations;
+using SpotifyMusicChatBot.API.Application.ViewModel.Chat;
+using SpotifyMusicChatBot.Domain.Application.Services;
+using SpotifyMusicChatBot.Domain.Application.Repository;
 using System.ComponentModel.DataAnnotations;
 
 namespace SpotifyMusicChatBot.API.Application.Controller
@@ -22,11 +25,107 @@ namespace SpotifyMusicChatBot.API.Application.Controller
     {
         private readonly IMediator _mediator;
         private readonly ILogger<ChatController> _logger;
+        private readonly IAIService _aiService;
+        private readonly IChatBotRepository _repository;
 
-        public ChatController(IMediator mediator, ILogger<ChatController> logger)
+        public ChatController(IMediator mediator, ILogger<ChatController> logger, IAIService aiService, IChatBotRepository repository)
         {
             _mediator = mediator;
             _logger = logger;
+            _aiService = aiService;
+            _repository = repository;
+        }
+
+        /// <summary>
+        /// Procesa una pregunta del usuario aplicando filtros de términos excluidos
+        /// </summary>
+        /// <param name="request">Datos de la pregunta</param>
+        /// <returns>Respuesta filtrada del ChatBot</returns>
+        [HttpPost("ask-filtered")]
+        public async Task<IActionResult> AskWithFilter([FromBody] FilteredChatRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Question))
+                {
+                    return BadRequest(new { Success = false, Message = "La pregunta es requerida" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.FirebaseUserId))
+                {
+                    return BadRequest(new { Success = false, Message = "FirebaseUserId es requerido" });
+                }
+
+                _logger.LogInformation("🎵 Procesando pregunta con filtros para usuario {UserId}: {Question}", 
+                    request.FirebaseUserId, request.Question);
+
+                // 1. Validar la pregunta
+                var validation = await _aiService.ValidateQuestionAsync(request.Question);
+                if (validation.ValidationStatus != "VALIDA")
+                {
+                    return Ok(new { 
+                        Success = false, 
+                        Message = validation.ValidationReason ?? "Pregunta no válida",
+                        Type = "VALIDATION_ERROR",
+                        ValidationStatus = validation.ValidationStatus
+                    });
+                }
+
+                // 2. Generar SQL
+                var sqlResult = await _aiService.GenerateSQLAsync(request.Question, request.ResultLimit);
+                if (!sqlResult.IsSuccess)
+                {
+                    return Ok(new { 
+                        Success = false, 
+                        Message = "No se pudo generar una consulta para tu pregunta",
+                        Type = "SQL_ERROR"
+                    });
+                }
+
+                // 3. Ejecutar consulta
+                var dbResults = await _repository.ExecuteRawSqlAsync(sqlResult.GeneratedSQL);
+
+                // 4. Generar respuesta natural CON FILTRADO
+                var naturalResponse = await _aiService.GenerateFilteredNaturalResponseAsync(
+                    request.Question, 
+                    dbResults, 
+                    request.FirebaseUserId, 
+                    request.Tone ?? "casual");
+
+                if (!naturalResponse.IsSuccess)
+                {
+                    return Ok(new { 
+                        Success = false, 
+                        Message = "No se pudo generar una respuesta",
+                        Type = "RESPONSE_ERROR"
+                    });
+                }
+
+                // 5. Guardar la conversación (opcional)
+                if (!string.IsNullOrWhiteSpace(request.SessionId))
+                {
+                    await _repository.SaveConversationAsync(
+                        request.Question, 
+                        naturalResponse.NaturalResponse, 
+                        request.SessionId, 
+                        request.FirebaseUserId);
+                }
+
+                _logger.LogInformation("✅ Respuesta filtrada generada exitosamente para usuario {UserId}", 
+                    request.FirebaseUserId);
+
+                return Ok(new {
+                    Success = true,
+                    Response = naturalResponse.NaturalResponse,
+                    SessionId = request.SessionId ?? _repository.GenerateSessionId(),
+                    Type = "FILTERED_RESPONSE"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error procesando pregunta filtrada para usuario {UserId}", request.FirebaseUserId);
+                return StatusCode(500, new { Success = false, Message = "Error interno del servidor" });
+            }
         }
 
         /// <summary>
