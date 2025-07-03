@@ -181,5 +181,22 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
                 return $"Error ejecutando SQL: {ex.Message}";
             }
         }
+
+        /// <summary>
+        /// Retrieves all unique conversation sessions from the database for a specific user, showing the first prompt of each.
+        /// </summary>
+        public async Task<IList<ConversationSession>> GetAllConversationsByUserAsync(string firebaseUserId)
+        {
+            try
+            {
+                var result = await GetAllAsync<ConversationSession>(ChatAIQuerys.GetAllConversationsByUser, new { FirebaseUserId = firebaseUserId });
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error retrieving conversation sessions for user {firebaseUserId}: {ex.Message}");
+                return new List<ConversationSession>();
+            }
+        }
     }
 }

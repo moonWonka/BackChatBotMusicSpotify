@@ -30,6 +30,11 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         Task<IList<ConversationSession>> GetAllConversationsAsync();
 
         /// <summary>
+        /// Obtiene todas las sesiones de conversación únicas de un usuario específico
+        /// </summary>
+        Task<IList<ConversationSession>> GetAllConversationsByUserAsync(string firebaseUserId);
+
+        /// <summary>
         /// Obtiene todos los turnos de una sesión específica
         /// </summary>
         Task<IList<ConversationTurn>> GetConversationBySessionIdAsync(string firebaseUserId);

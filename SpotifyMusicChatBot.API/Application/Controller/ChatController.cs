@@ -48,17 +48,21 @@ namespace SpotifyMusicChatBot.API.Application.Controller
         }
 
         /// <summary>
-        /// Obtiene todas las sesiones de conversación disponibles
+        /// Obtiene todas las sesiones de conversación de un usuario específico
         /// </summary>
-        /// <returns>Lista de todas las sesiones con información básica</returns>
+        /// <param name="firebaseUserId">ID del usuario de Firebase</param>
+        /// <returns>Lista de todas las sesiones del usuario con información básica</returns>
         /// <response code="200">Conversaciones obtenidas exitosamente</response>
+        /// <response code="400">ID de usuario inválido</response>
         /// <response code="500">Error interno del servidor</response>
-        [HttpGet("conversations")]
+        [HttpGet("conversations/{firebaseUserId}")]
         [ProducesResponseType(typeof(GetAllConversationsResponse), 200)]
+        [ProducesResponseType(typeof(BaseResponse), 400)]
         [ProducesResponseType(typeof(BaseResponse), 500)]
-        public async Task<IActionResult> GetAllConversations()
+        public async Task<IActionResult> GetAllConversations([FromRoute] string firebaseUserId)
         {
-            GetAllConversationsResponse response = await _mediator.Send(new GetAllConversationsRequest());
+            var request = new GetAllConversationsRequest { FirebaseUserId = firebaseUserId };
+            GetAllConversationsResponse response = await _mediator.Send(request);
             return response.ToActionResult();
         }
 

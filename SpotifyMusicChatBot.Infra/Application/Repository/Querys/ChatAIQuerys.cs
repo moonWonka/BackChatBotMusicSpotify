@@ -32,6 +32,27 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository.Querys
             ORDER BY timestamp DESC";
 
         /// <summary>
+        /// Query para obtener todas las sesiones de conversación únicas de un usuario específico con el primer prompt
+        /// </summary>
+        internal const string GetAllConversationsByUser = @"
+            WITH RankedConversations AS (
+                SELECT
+                    session_id,
+                    user_prompt,
+                    timestamp,
+                    ROW_NUMBER() OVER(PARTITION BY session_id ORDER BY id ASC) as rn
+                FROM conversation_history
+                WHERE firebase_user_id = @FirebaseUserId
+            )
+            SELECT
+                session_id AS SessionId,
+                user_prompt AS UserPrompt,
+                timestamp AS Timestamp
+            FROM RankedConversations
+            WHERE rn = 1
+            ORDER BY timestamp DESC";
+
+        /// <summary>
         /// Query para obtener todos los turnos de una sesión específica
         /// </summary>
         internal const string GetConversationByFirebaseUserId = @"

@@ -17,12 +17,13 @@ namespace SpotifyMusicChatBot.API.Application.Query.GetAllConversations
         {
             try
             {
-                IList<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsAsync();
+                IList<Domain.Application.Model.Conversation.ConversationSession> conversations = await _chatRepository.GetAllConversationsByUserAsync(request.FirebaseUserId);
+                _logger.LogInformation("✅ Conversaciones obtenidas exitosamente para usuario: {FirebaseUserId}, cantidad: {Count}", request.FirebaseUserId, conversations.Count);
                 return GetAllConversationsMapper.ToSuccessResponse(conversations);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving conversations");
+                _logger.LogError(ex, "❌ Error retrieving conversations for user: {FirebaseUserId}", request.FirebaseUserId);
                 return GetAllConversationsMapper.ToErrorResponse(500, "Error al obtener las conversaciones");
             }
         }
