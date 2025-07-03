@@ -12,12 +12,18 @@ namespace SpotifyMusicChatBot.Infra.Application.Services
         private readonly ILogger<AIService> _logger;
         private readonly IGeminiIAService _geminiIAService;
         private readonly IAnthropicIAService _anthropicIAService;
+        private readonly IExcludedTermsFilterService? _excludedTermsFilterService;
 
-        public AIService(ILogger<AIService> logger, IGeminiIAService geminiIAService, IAnthropicIAService anthropicIAService)
+        public AIService(
+            ILogger<AIService> logger, 
+            IGeminiIAService geminiIAService, 
+            IAnthropicIAService anthropicIAService,
+            IExcludedTermsFilterService? excludedTermsFilterService = null)
         {
             _geminiIAService = geminiIAService;
             _anthropicIAService = anthropicIAService;
             _logger = logger;
+            _excludedTermsFilterService = excludedTermsFilterService;
         }
 
         public async Task<ContextualizationResult> ContextualizeQuestionAsync(string question, string conversationHistory, string modelName = "Gemini", CancellationToken cancellationToken = default)
@@ -172,11 +178,21 @@ namespace SpotifyMusicChatBot.Infra.Application.Services
             try
             {
                 // Aplicar filtro de términos excluidos si el usuario está identificado
-                if (!string.IsNullOrWhiteSpace(firebaseUserId))
+                if (!string.IsNullOrWhiteSpace(firebaseUserId) && _excludedTermsFilterService != null)
                 {
-                    // Aquí se inyectaría el servicio de filtrado, por ahora devolvemos la respuesta normal
-                    // En una implementación completa, se inyectaría IExcludedTermsFilterService
-                    _logger.LogInformation("✅ Respuesta generada sin filtrado específico para usuario {UserId}", firebaseUserId);
+                    _logger.LogInformation("🔍 Aplicando filtro de términos excluidos para usuario {UserId}", firebaseUserId);
+                    
+                    var filteredResponse = await _excludedTermsFilterService.FilterResponseAsync(
+                        normalResponse.NaturalResponse, 
+                        firebaseUserId);
+                    
+                    // Actualizar la respuesta con la versión filtrada
+                    normalResponse.NaturalResponse = filteredResponse;
+                    _logger.LogInformation("✅ Filtro aplicado exitosamente para usuario {UserId}", firebaseUserId);
+                }
+                else
+                {
+                    _logger.LogDebug("⚠️ Servicio de filtrado no disponible o usuario no identificado");
                 }
 
                 return normalResponse;

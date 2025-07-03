@@ -12,6 +12,7 @@ using SpotifyMusicChatBot.API.Application.ViewModel.Chat;
 using SpotifyMusicChatBot.Domain.Application.Services;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using System.ComponentModel.DataAnnotations;
+using SpotifyMusicChatBot.API.Application.ViewModel.Chat;
 
 namespace SpotifyMusicChatBot.API.Application.Controller
 {
