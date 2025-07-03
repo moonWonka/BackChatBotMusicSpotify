@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 using SpotifyMusicChatBot.Domain.Application.Model.Search;
+using SpotifyMusicChatBot.Domain.Application.Model.ExcludedTerms;
 
 namespace SpotifyMusicChatBot.Domain.Application.Repository
 {
@@ -63,5 +64,36 @@ namespace SpotifyMusicChatBot.Domain.Application.Repository
         /// Ejecuta una sentencia SQL arbitraria y retorna el resultado como string
         /// </summary>
         Task<string> ExecuteRawSqlAsync(string sqlQuery);
+
+        // Métodos para términos excluidos
+        /// <summary>
+        /// Crea un nuevo término excluido para un usuario
+        /// </summary>
+        Task<bool> CreateExcludedTermAsync(CreateExcludedTermRequest request);
+
+        /// <summary>
+        /// Obtiene todos los términos excluidos activos de un usuario
+        /// </summary>
+        Task<IList<ExcludedTerm>> GetExcludedTermsByUserAsync(string firebaseUserId);
+
+        /// <summary>
+        /// Actualiza un término excluido
+        /// </summary>
+        Task<bool> UpdateExcludedTermAsync(UpdateExcludedTermRequest request);
+
+        /// <summary>
+        /// Elimina (desactiva) un término excluido
+        /// </summary>
+        Task<bool> DeleteExcludedTermAsync(int termId, string firebaseUserId);
+
+        /// <summary>
+        /// Verifica si un término ya existe para un usuario
+        /// </summary>
+        Task<bool> ExcludedTermExistsAsync(string term, string category, string firebaseUserId);
+
+        /// <summary>
+        /// Obtiene términos excluidos por categoría
+        /// </summary>
+        Task<IList<ExcludedTerm>> GetExcludedTermsByCategoryAsync(string firebaseUserId, string category);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Data.SqlClient;
 using SpotifyMusicChatBot.Domain.Application.Model.Conversation;
 using SpotifyMusicChatBot.Domain.Application.Model.Search;
+using SpotifyMusicChatBot.Domain.Application.Model.ExcludedTerms;
 using SpotifyMusicChatBot.Domain.Application.Repository;
 using SpotifyMusicChatBot.Infra.Application.Repository.Querys;
 
@@ -198,5 +199,142 @@ namespace SpotifyMusicChatBot.Infra.Application.Repository
                 return new List<ConversationSession>();
             }
         }
+
+        #region Métodos para Términos Excluidos
+
+        /// <summary>
+        /// Crea un nuevo término excluido para un usuario
+        /// </summary>
+        public async Task<bool> CreateExcludedTermAsync(CreateExcludedTermRequest request)
+        {
+            try
+            {
+                // Verificar si el término ya existe
+                bool exists = await ExcludedTermExistsAsync(request.Term, request.Category, request.FirebaseUserId);
+                if (exists)
+                {
+                    _logger?.LogWarning("El término '{Term}' en la categoría '{Category}' ya existe para el usuario {UserId}", 
+                        request.Term, request.Category, request.FirebaseUserId);
+                    return false;
+                }
+
+                int result = await ExecuteAsync(ChatAIQuerys.CreateExcludedTerm, new 
+                { 
+                    FirebaseUserId = request.FirebaseUserId, 
+                    Term = request.Term, 
+                    Category = request.Category 
+                });
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error creando término excluido: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todos los términos excluidos activos de un usuario
+        /// </summary>
+        public async Task<IList<ExcludedTerm>> GetExcludedTermsByUserAsync(string firebaseUserId)
+        {
+            try
+            {
+                var result = await GetAllAsync<ExcludedTerm>(ChatAIQuerys.GetExcludedTermsByUser, new { FirebaseUserId = firebaseUserId });
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error obteniendo términos excluidos para usuario {UserId}: {Message}", firebaseUserId, ex.Message);
+                return new List<ExcludedTerm>();
+            }
+        }
+
+        /// <summary>
+        /// Actualiza un término excluido
+        /// </summary>
+        public async Task<bool> UpdateExcludedTermAsync(UpdateExcludedTermRequest request)
+        {
+            try
+            {
+                int result = await ExecuteAsync(ChatAIQuerys.UpdateExcludedTerm, new 
+                { 
+                    Id = request.Id,
+                    FirebaseUserId = request.FirebaseUserId, 
+                    Term = request.Term, 
+                    Category = request.Category,
+                    IsActive = request.IsActive
+                });
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error actualizando término excluido: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Elimina (desactiva) un término excluido
+        /// </summary>
+        public async Task<bool> DeleteExcludedTermAsync(int termId, string firebaseUserId)
+        {
+            try
+            {
+                int result = await ExecuteAsync(ChatAIQuerys.DeleteExcludedTerm, new { Id = termId, FirebaseUserId = firebaseUserId });
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error eliminando término excluido: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Verifica si un término ya existe para un usuario
+        /// </summary>
+        public async Task<bool> ExcludedTermExistsAsync(string term, string category, string firebaseUserId)
+        {
+            try
+            {
+                var result = await GetByIdAsync<int>(ChatAIQuerys.ExcludedTermExists, new 
+                { 
+                    FirebaseUserId = firebaseUserId, 
+                    Term = term, 
+                    Category = category 
+                });
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error verificando existencia de término excluido: {Message}", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene términos excluidos por categoría
+        /// </summary>
+        public async Task<IList<ExcludedTerm>> GetExcludedTermsByCategoryAsync(string firebaseUserId, string category)
+        {
+            try
+            {
+                var result = await GetAllAsync<ExcludedTerm>(ChatAIQuerys.GetExcludedTermsByCategory, new 
+                { 
+                    FirebaseUserId = firebaseUserId, 
+                    Category = category 
+                });
+                return result.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "❌ Error obteniendo términos excluidos por categoría {Category} para usuario {UserId}: {Message}", 
+                    category, firebaseUserId, ex.Message);
+                return new List<ExcludedTerm>();
+            }
+        }
+
+        #endregion
     }
 }
